@@ -27,8 +27,30 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Don't automatically redirect on 401 - let components handle it
-    // This prevents infinite redirect loops
+    // Enhanced error logging
+    if (error.response) {
+      // Server responded with error
+      console.error(`❌ API Error: ${error.response.status}`, {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+      
+      // Check for CORS/Cookie issues
+      if (error.response.status === 401 && !error.response.data) {
+        console.error('🔐 Authentication failed - possible CORS/Cookie issue');
+        console.error('Check: Backend CORS settings, Cookie SameSite/Secure attributes');
+      }
+    } else if (error.request) {
+      // Request made but no response
+      console.error('❌ No response from server:', error.request);
+      console.error('Check: Backend is running, CORS is configured correctly');
+    } else {
+      // Error in request setup
+      console.error('❌ Request setup error:', error.message);
+    }
+    
     return Promise.reject(error);
   }
 );
