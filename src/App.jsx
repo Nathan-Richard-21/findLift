@@ -30,7 +30,7 @@ import VerificationStatus from './pages/verification/VerificationStatus'
 import AdminKYCList from './pages/admin/AdminKYCList'
 import AdminKYCReview from './pages/admin/AdminKYCReview'
 import AdminRides from './pages/admin/AdminRides'
-import AdminSettings from './pages/AdminSettings'
+import AdminUsers from './pages/admin/AdminUsers'
 // Payment pages
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
@@ -82,13 +82,18 @@ function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await authService.logout()
-      setHasTriedAuth(false) // Reset flag to allow refetch
-      refetch()
+      // Clear all local state immediately
+      setHasTriedAuth(false)
+      // Force refetch to clear user state
+      await refetch()
+      // Redirect to home page
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout error:', error)
       // Force logout even if API call fails
-      setHasTriedAuth(false) // Reset flag to allow refetch
-      refetch()
+      setHasTriedAuth(false)
+      await refetch()
+      window.location.href = '/'
     }
   }
 
@@ -145,11 +150,11 @@ function App() {
             <Route path="verify/vehicle" element={<CaptureVehicle />} />
             <Route path="verify/review" element={<ReviewConsent />} />
             <Route path="verify/status" element={<VerificationStatus />} />
-            {/* Admin routes (UI-only protection) */}
-            <Route path="admin-settings" element={<AdminSettings />} />
+            {/* Admin routes (protected on backend) */}
             <Route path="admin/kyc" element={<AdminKYCList />} />
             <Route path="admin/kyc/:sessionId" element={<AdminKYCReview />} />
             <Route path="admin/rides" element={<AdminRides />} />
+            <Route path="admin/users" element={<AdminUsers />} />
             {/* Payment routes */}
             <Route path="payment/mock" element={<MockPayment />} />
             <Route path="payment/success" element={<PaymentSuccess />} />

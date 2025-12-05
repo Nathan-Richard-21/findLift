@@ -4,8 +4,10 @@ import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff } from 'lucide-react'
 import { authService } from '../services'
 import { useAuth } from '../App'
+import { useToast } from '../contexts/ToastContext'
 
 const Auth = () => {
+  const toast = useToast();
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -42,7 +44,7 @@ const Auth = () => {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: () => {
-      alert('Login successful!')
+      toast.success('Login successful! Welcome back.');
       refetch()
       navigate(from, { replace: true })
     },
@@ -51,11 +53,11 @@ const Auth = () => {
       if (error.response?.data?.details) {
         // Show detailed validation errors
         const errorMessages = error.response.data.details.map(detail => 
-          `${detail.field}: ${detail.message}`
-        ).join('\n')
-        alert('Login failed:\n' + errorMessages)
+          detail.message
+        ).join(', ')
+        toast.error(`Login failed: ${errorMessages}`)
       } else {
-        alert(error.response?.data?.error || 'Login failed')
+        toast.error(error.response?.data?.error || 'Login failed. Please check your credentials.')
       }
     }
   })
@@ -63,7 +65,7 @@ const Auth = () => {
   const registerMutation = useMutation({
     mutationFn: authService.register,
     onSuccess: () => {
-      alert('Registration successful!')
+      toast.success('Registration successful! Welcome to Find Lift.');
       refetch()
       navigate(from, { replace: true })
     },
@@ -72,11 +74,11 @@ const Auth = () => {
       if (error.response?.data?.details) {
         // Show detailed validation errors
         const errorMessages = error.response.data.details.map(detail => 
-          `${detail.field}: ${detail.message}`
-        ).join('\n')
-        alert('Registration failed:\n' + errorMessages)
+          detail.message
+        ).join(', ')
+        toast.error(`Registration failed: ${errorMessages}`)
       } else {
-        alert(error.response?.data?.error || 'Registration failed')
+        toast.error(error.response?.data?.error || 'Registration failed. Please try again.')
       }
     }
   })
@@ -92,17 +94,17 @@ const Auth = () => {
     } else {
       // Validation checks
       if (!formData.accepted_terms) {
-        alert('You must accept the terms and conditions')
+        toast.warning('You must accept the terms and conditions to continue')
         return
       }
       
       if (formData.password.length < 6) {
-        alert('Password must be at least 6 characters long')
+        toast.error('Password must be at least 6 characters long')
         return
       }
       
       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-        alert('Password must contain at least one uppercase letter, one lowercase letter, and one number')
+        toast.error('Password must contain uppercase, lowercase, and a number')
         return
       }
       

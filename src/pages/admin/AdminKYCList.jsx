@@ -214,8 +214,19 @@ const AdminKYCList = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage driver verifications and rides</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600">Manage driver verifications, rides, and users</p>
+            </div>
+            <button
+              onClick={() => navigate('/admin/users')}
+              className="btn-primary flex items-center gap-2"
+            >
+              <FaUsers />
+              Manage Users
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
