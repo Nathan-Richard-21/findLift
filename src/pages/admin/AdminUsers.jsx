@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Shield, UserPlus, Search } from 'lucide-react';
-import api from '../services/api';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../App';
+import api from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../App';
 
 const AdminUsers = () => {
   const { user: currentUser } = useAuth();
