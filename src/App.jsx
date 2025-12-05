@@ -9,6 +9,8 @@ import OfferRide from './pages/OfferRide'
 import Bookings from './pages/Bookings'
 import MyRides from './pages/MyRides'
 import Auth from './pages/Auth'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import DriverSignup from './pages/DriverSignup'
 import Profile from './pages/Profile'
 import Vehicles from './pages/Vehicles'
@@ -139,6 +141,8 @@ function App() {
             <Route path="auth" element={<Auth />} />
             <Route path="auth/login" element={<Auth />} />
             <Route path="auth/signup" element={<Auth />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password/:token" element={<ResetPassword />} />
             <Route path="driver/signup" element={<DriverSignup />} />
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="terms" element={<TermsOfService />} />

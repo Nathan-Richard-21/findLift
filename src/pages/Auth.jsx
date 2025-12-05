@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { Eye, EyeOff } from 'lucide-react'
 import { authService } from '../services'
 import { useAuth } from '../App'
 import { useToast } from '../contexts/ToastContext'
+import GoogleSignInButton from '../components/GoogleSignInButton'
 
 const Auth = () => {
   const toast = useToast();
@@ -269,6 +270,17 @@ const Auth = () => {
               </div>
             </div>
 
+            {isLogin && (
+              <div className="flex items-center justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-primary-600 hover:text-primary-500"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            )}
+
             {!isLogin && (
               <div className="space-y-3">
                 <div className="flex items-start">
@@ -318,6 +330,28 @@ const Auth = () => {
               {isLoading ? 'Please wait...' : (isLogin ? 'Sign in' : 'Create account')}
             </button>
           </div>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign-In */}
+          <GoogleSignInButton
+            onSuccess={(data) => {
+              toast.success(`Welcome ${data.data.first_name}!`);
+              refetch();
+              navigate(from, { replace: true });
+            }}
+            onError={(error) => {
+              toast.error(error || 'Google sign-in failed');
+            }}
+          />
         </form>
       </div>
     </div>
