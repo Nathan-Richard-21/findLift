@@ -23,7 +23,7 @@ const GoogleSignInButton = ({ onSuccess, onError }) => {
           {
             theme: 'outline',
             size: 'large',
-            width: '100%',
+            width: 400, // Fixed width in pixels instead of percentage
             text: 'continue_with',
             shape: 'rectangular',
             logo_alignment: 'left'
