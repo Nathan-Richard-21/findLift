@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false, // Disable sourcemaps in production for security
-    minify: 'terser',
+    minify: 'esbuild', // Use esbuild for faster builds (default minifier)
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
