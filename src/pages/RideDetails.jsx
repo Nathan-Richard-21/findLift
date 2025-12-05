@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../App';
+import { useToast } from '../contexts/ToastContext';
 import { ridesService } from '../services/ridesService';
 import { bookingsService } from '../services/bookingsService';
 import { paymentService } from '../services/paymentService';
@@ -28,6 +29,7 @@ const RideDetails = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
+  const toast = useToast();
   const [seats, setSeats] = useState(1);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -61,7 +63,7 @@ const RideDetails = () => {
     e.preventDefault();
     
     if (!isAuthenticated) {
-      alert('Please log in to book a ride');
+      toast.warning('Please log in to book a ride');
       navigate('/auth');
       return;
     }
@@ -69,10 +71,9 @@ const RideDetails = () => {
     if (isProcessing) return; // Prevent double submission
     
     setIsProcessing(true);
+    toast.info('Processing your booking...');
 
     try {
-      console.log('🔵 Starting booking process...');
-      
       // Step 1: Create the booking first (status will be 'pending')
       const bookingPayload = {
         ride_offer_id: id,
@@ -93,39 +94,28 @@ const RideDetails = () => {
       if (bookingData.emergency_contact_phone && bookingData.emergency_contact_phone.trim()) {
         bookingPayload.emergency_contact_phone = bookingData.emergency_contact_phone.trim();
       }
-
-      console.log('🔵 Creating booking with payload:', bookingPayload);
       
       // Create booking
       const bookingResponse = await bookingsService.createBooking(bookingPayload);
-      
-      console.log('🔵 Booking created:', bookingResponse);
       
       if (!bookingResponse.success) {
         throw new Error(bookingResponse.error || 'Failed to create booking');
       }
 
       const bookingId = bookingResponse.data._id;
-      console.log('🔵 Booking ID:', bookingId);
+      toast.success('Booking created! Redirecting to payment...');
 
       // Step 2: Create payment link immediately
-      console.log('🔵 Creating payment link for booking:', bookingId);
-      
       const paymentResponse = await paymentService.createPaymentLink(bookingId);
       
-      console.log('🔵 Payment response:', paymentResponse);
-      
       if (paymentResponse.success && paymentResponse.data.payment_link_url) {
-        console.log('✅ Payment link created successfully, redirecting to:', paymentResponse.data.payment_link_url);
         // Redirect to Yoco payment page
         window.location.href = paymentResponse.data.payment_link_url;
       } else {
-        console.error('❌ Payment link creation failed:', paymentResponse);
         throw new Error(paymentResponse.error || 'Failed to create payment link');
       }
     } catch (error) {
-      console.error('❌ Booking/Payment error:', error);
-      console.error('❌ Error response:', error.response?.data);
+      console.error('Booking/Payment error:', error);
       setIsProcessing(false);
       
       // Handle validation errors
@@ -136,16 +126,16 @@ const RideDetails = () => {
         });
         setValidationErrors(errors);
         
-        // Show summary alert
-        const errorMessages = error.response.data.details.map(d => d.message).join('\n');
-        alert(`Please fix the following errors:\n\n${errorMessages}`);
+        // Show summary toast
+        toast.error('Please fix the validation errors in the form');
       } else {
         // Show the actual error message from the backend
         const errorMsg = error.response?.data?.error || 
+                        error.response?.data?.details || 
                         error.response?.data?.message || 
                         error.message || 
                         'Failed to process booking. Please try again.';
-        alert(`Booking Error:\n\n${errorMsg}`);
+        toast.error(errorMsg);
       }
     }
   };

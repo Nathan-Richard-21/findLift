@@ -4,8 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../App';
 import { usersService } from '../services/usersService';
 import { bookingsService } from '../services/bookingsService';
-import { authService } from '../services/api';
-import { FaUser, FaEdit, FaCar, FaStar, FaHistory, FaSignOutAlt, FaShieldAlt } from 'react-icons/fa';
+import { FaUser, FaEdit, FaCar, FaStar, FaHistory, FaSignOutAlt } from 'react-icons/fa';
 
 const Profile = () => {
   const { user, logout, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -44,19 +43,6 @@ const Profile = () => {
     onError: (error) => {
       console.error('Failed to update profile:', error);
       alert('Failed to update profile. Please try again.');
-    }
-  });
-
-  // Make admin mutation (DEV ONLY)
-  const makeAdminMutation = useMutation({
-    mutationFn: authService.makeAdmin,
-    onSuccess: () => {
-      alert('You are now an admin! Refreshing...');
-      window.location.reload();
-    },
-    onError: (error) => {
-      console.error('Failed to make admin:', error);
-      alert('Failed to update role. Please try again.');
     }
   });
 
@@ -119,27 +105,6 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* DEV ONLY: Admin Access Button */}
-        {user?.role !== 'admin' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <FaShieldAlt className="text-yellow-600 mr-2" />
-                <span className="text-sm text-yellow-800">
-                  Development Mode: Grant Admin Access
-                </span>
-              </div>
-              <button
-                onClick={() => makeAdminMutation.mutate()}
-                disabled={makeAdminMutation.isPending}
-                className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 text-sm"
-              >
-                {makeAdminMutation.isPending ? 'Processing...' : 'Make Me Admin'}
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">

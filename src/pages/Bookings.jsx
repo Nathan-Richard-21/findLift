@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../App';
+import { useToast } from '../contexts/ToastContext';
 import { bookingsService } from '../services/bookingsService';
 import PaymentButton from '../components/PaymentButton';
 import { 
@@ -26,6 +27,7 @@ const Bookings = () => {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [filterStatus, setFilterStatus] = useState('all');
 
   // Fetch user's bookings
@@ -40,11 +42,11 @@ const Bookings = () => {
     mutationFn: bookingsService.cancelBooking,
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
-      alert('Booking cancelled successfully');
+      toast.success('Booking cancelled successfully');
     },
     onError: (error) => {
       console.error('Failed to cancel booking:', error);
-      alert('Failed to cancel booking. Please try again.');
+      toast.error('Failed to cancel booking. Please try again.');
     }
   });
 
