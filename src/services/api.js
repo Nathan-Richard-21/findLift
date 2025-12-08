@@ -32,6 +32,10 @@ api.interceptors.request.use(
     const token = getTokenFromCookie();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log(`🔑 Added Authorization header (token length: ${token.length})`);
+    } else {
+      console.log('⚠️ No token found in cookies');
+      console.log('   Current cookies:', document.cookie);
     }
     
     return config;
