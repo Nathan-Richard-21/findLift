@@ -343,9 +343,11 @@ const Auth = () => {
 
           {/* Google Sign-In */}
           <GoogleSignInButton
-            onSuccess={(data) => {
+            onSuccess={async (data) => {
               toast.success(`Welcome ${data.user?.first_name || 'back'}!`);
-              refetch();
+              // Small delay to ensure cookie is set in browser
+              await new Promise(resolve => setTimeout(resolve, 100));
+              await refetch();
               navigate(from, { replace: true });
             }}
             onError={(error) => {
