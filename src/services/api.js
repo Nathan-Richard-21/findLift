@@ -101,6 +101,10 @@ export const authService = {
   },
   logout: async () => {
     const response = await api.post('/auth/logout');
+    // Clear token from both cookie and localStorage
+    document.cookie = 'token=; path=/; max-age=0';
+    localStorage.removeItem('token');
+    console.log('✅ Logged out - token cleared from cookie and localStorage');
     return response.data;
   },
   getMe: async () => {
