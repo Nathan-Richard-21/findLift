@@ -10,8 +10,9 @@ const api = axios.create({
   },
 });
 
-// Helper to get token from cookie
+// Helper to get token from cookie OR localStorage
 const getTokenFromCookie = () => {
+  // First try cookie
   const cookies = document.cookie.split(';');
   for (let cookie of cookies) {
     const [name, value] = cookie.trim().split('=');
@@ -19,7 +20,8 @@ const getTokenFromCookie = () => {
       return value;
     }
   }
-  return null;
+  // Fallback to localStorage
+  return localStorage.getItem('token');
 };
 
 // Request interceptor to add token from cookie to Authorization header
