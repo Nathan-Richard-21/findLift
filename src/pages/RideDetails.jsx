@@ -269,15 +269,21 @@ const RideDetails = () => {
                       </h4>
                       <div className="flex items-center mt-1">
                         <div className="flex items-center mr-4">
-                          {[...Array(5)].map((_, i) => (
-                            <FaStar 
-                              key={i} 
-                              className={`text-sm ${i < (ride.driver?.rating || 4) ? 'text-yellow-400' : 'text-gray-300'}`} 
-                            />
-                          ))}
-                          <span className="ml-2 text-gray-600">
-                            {ride.driver?.rating || 4.0} ({ride.driver?.total_trips || 0} trips)
-                          </span>
+                          {ride.driver?.rating_avg ? (
+                            <>
+                              {[...Array(5)].map((_, i) => (
+                                <FaStar 
+                                  key={i} 
+                                  className={`text-sm ${i < Math.round(ride.driver.rating_avg) ? 'text-yellow-400' : 'text-gray-300'}`} 
+                                />
+                              ))}
+                              <span className="ml-2 text-gray-600">
+                                {ride.driver.rating_avg.toFixed(1)} ({ride.driver.rating_count || 0} reviews)
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-gray-500 text-sm">New driver - No reviews yet</span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center mt-2 text-sm text-gray-600">

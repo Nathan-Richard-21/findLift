@@ -284,11 +284,17 @@ const Search = () => {
                             Verified Driver
                           </h3>
                           <div className="flex items-center">
-                            <FaStar className="text-yellow-400 mr-1" />
-                            <span className="text-sm font-medium">{ride.driver.rating || '5.0'}</span>
-                            <span className="text-gray-500 text-sm ml-1">
-                              ({ride.driver.reviews_count || 0} reviews)
-                            </span>
+                            {ride.driver.rating_avg ? (
+                              <>
+                                <FaStar className="text-yellow-400 mr-1" />
+                                <span className="text-sm font-medium">{ride.driver.rating_avg.toFixed(1)}</span>
+                                <span className="text-gray-500 text-sm ml-1">
+                                  ({ride.driver.rating_count || 0} reviews)
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-gray-500 text-sm">New driver</span>
+                            )}
                           </div>
                         </div>
                       </div>
