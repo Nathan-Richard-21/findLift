@@ -228,6 +228,22 @@ export const kycService = {
     }
   },
 
+  // Admin: List verifications by status (approved, rejected, etc.)
+  listByStatus: async (status, page = 1, limit = 10) => {
+    try {
+      const response = await api.get(`/verification/admin/list/${status}?page=${page}&limit=${limit}`);
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || `Failed to get ${status} verifications`);
+      }
+    } catch (error) {
+      console.error(`Failed to list ${status} submissions:`, error);
+      throw new Error(error.response?.data?.message || `Failed to retrieve ${status} submissions`);
+    }
+  },
+
   // Admin: Get verification details with documents
   getVerificationDetails: async (sessionId) => {
     try {

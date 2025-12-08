@@ -23,7 +23,7 @@ const AdminKYCList = () => {
 
   useEffect(() => {
     loadData();
-  }, [pagination.current]);
+  }, [pagination.current, filter]);
 
   const loadData = async () => {
     try {
@@ -31,11 +31,16 @@ const AdminKYCList = () => {
       setError(null);
       setIsUnauthorized(false);
 
-      // Load both submissions and stats
-      const [submissionsData, statsData] = await Promise.all([
-        kycService.listPending(pagination.current, 10),
-        kycService.getStats()
-      ]);
+      // Determine which API to call based on filter
+      let submissionsData;
+      if (filter === 'approved' || filter === 'rejected') {
+        submissionsData = await kycService.listByStatus(filter, pagination.current, 10);
+      } else {
+        submissionsData = await kycService.listPending(pagination.current, 10);
+      }
+
+      // Load stats separately
+      const statsData = await kycService.getStats();
 
       setSubmissions(submissionsData.verifications || []);
       setPagination(submissionsData.pagination || { current: 1, pages: 1, total: 0 });
@@ -317,18 +322,21 @@ const AdminKYCList = () => {
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
           <div className="flex items-center space-x-4">
             <FaFilter className="text-gray-600" />
-            <div className="flex space-x-2">
-              {['pending', 'high-risk', 'expiring', 'duplicates'].map((filterOption) => (
+            <div className="flex flex-wrap gap-2">
+              {['pending', 'approved', 'rejected', 'high-risk', 'expiring', 'duplicates'].map((filterOption) => (
                 <button
                   key={filterOption}
-                  onClick={() => setFilter(filterOption)}
+                  onClick={() => {
+                    setFilter(filterOption);
+                    setPagination({ ...pagination, current: 1 });
+                  }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     filter === filterOption
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1).replace('-', ' ')}
                 </button>
               ))}
             </div>
@@ -348,11 +356,11 @@ const AdminKYCList = () => {
               <div key={submission.sessionId} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                 <div className="p-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 flex-1">
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                         {getStatusIcon(submission.verification?.status)}
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-semibold text-lg">
                           {submission.userId?.first_name} {submission.userId?.last_name}
                         </h3>
@@ -370,6 +378,31 @@ const AdminKYCList = () => {
                             Session: {submission.sessionId.substring(0, 8)}...
                           </span>
                         </div>
+
+                        {/* Show reviewed by admin info for approved/rejected submissions */}
+                        {(submission.verification?.status === 'approved' || submission.verification?.status === 'rejected') && (
+                          <div className="mt-2 text-sm">
+                            {submission.verification?.reviewedBy && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Reviewed by:</span>{' '}
+                                {submission.verification.reviewedBy.first_name} {submission.verification.reviewedBy.last_name}
+                                {' '}({submission.verification.reviewedBy.email})
+                              </p>
+                            )}
+                            {submission.verification?.reviewedAt && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Reviewed on:</span>{' '}
+                                {new Date(submission.verification.reviewedAt).toLocaleString()}
+                              </p>
+                            )}
+                            {submission.verification?.status === 'rejected' && submission.verification?.rejectionReason && (
+                              <p className="text-red-600 mt-1">
+                                <span className="font-medium">Rejection Reason:</span>{' '}
+                                {submission.verification.rejectionReason.replace(/_/g, ' ')}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -378,7 +411,7 @@ const AdminKYCList = () => {
                         onClick={() => navigate(`/admin/kyc/${submission.sessionId}`)}
                         className="btn-primary"
                       >
-                        Review
+                        {submission.verification?.status === 'approved' || submission.verification?.status === 'rejected' ? 'View Details' : 'Review'}
                       </button>
                     </div>
                   </div>

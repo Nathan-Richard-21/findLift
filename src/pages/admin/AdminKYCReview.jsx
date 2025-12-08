@@ -9,6 +9,7 @@ const AdminKYCReview = () => {
   const [submission, setSubmission] = useState(null);
   const [decision, setDecision] = useState('');
   const [reason, setReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -69,12 +70,21 @@ const AdminKYCReview = () => {
       return;
     }
 
+    // Validate custom reason if "other" is selected
+    if (decision === 'reject' && reason === 'other' && !customReason.trim()) {
+      alert('Please specify the reason for rejection.');
+      return;
+    }
+
     setProcessing(true);
     try {
+      // Use custom reason if "other" is selected
+      const finalReason = reason === 'other' ? customReason : reason;
+      
       if (decision === 'approve') {
         await kycService.approve(sessionId, adminNotes);
       } else if (decision === 'reject') {
-        await kycService.reject(sessionId, reason, adminNotes);
+        await kycService.reject(sessionId, finalReason, adminNotes);
       }
       
       alert(`Verification ${decision}d successfully`);
@@ -593,28 +603,49 @@ const AdminKYCReview = () => {
               </div>
 
               {decision === 'reject' && (
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Rejection Reason
-                  </label>
-                  <select
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    className="input-field w-full"
-                  >
-                    <option value="">Select reason...</option>
-                    <option value="document_unreadable">Document unreadable</option>
-                    <option value="face_mismatch">Face mismatch</option>
-                    <option value="expired_document">Expired document</option>
-                    <option value="suspected_fraud">Suspected fraud</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Rejection Reason
+                    </label>
+                    <select
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      className="input-field w-full"
+                    >
+                      <option value="">Select reason...</option>
+                      <option value="document_unreadable">Document unreadable</option>
+                      <option value="face_mismatch">Face mismatch</option>
+                      <option value="expired_document">Expired document</option>
+                      <option value="suspected_fraud">Suspected fraud</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  {reason === 'other' && (
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Specify Rejection Reason *
+                      </label>
+                      <textarea
+                        value={customReason}
+                        onChange={(e) => setCustomReason(e.target.value)}
+                        placeholder="Please provide a detailed reason for rejection..."
+                        rows="3"
+                        className="input-field w-full resize-none"
+                        maxLength="500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {customReason.length}/500 characters
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
 
               <button
                 onClick={handleDecision}
-                disabled={!decision || (decision === 'reject' && !reason) || processing}
+                disabled={!decision || (decision === 'reject' && (!reason || (reason === 'other' && !customReason.trim()))) || processing}
                 className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processing ? 'Processing...' : `${decision.charAt(0).toUpperCase() + decision.slice(1)} Verification`}
