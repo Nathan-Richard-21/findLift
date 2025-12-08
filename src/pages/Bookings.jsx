@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../App';
 import { useToast } from '../contexts/ToastContext';
 import { bookingsService } from '../services/bookingsService';
+import { reviewsService } from '../services/reviewsService';
 import PaymentButton from '../components/PaymentButton';
+import RatingModal from '../components/RatingModal';
 import { 
   FaMapMarkerAlt, 
   FaCalendarAlt, 
@@ -20,7 +22,8 @@ import {
   FaEye,
   FaSpinner,
   FaTicketAlt,
-  FaHourglassHalf
+  FaHourglassHalf,
+  FaStar
 } from 'react-icons/fa';
 
 const Bookings = () => {
@@ -29,6 +32,7 @@ const Bookings = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [filterStatus, setFilterStatus] = useState('all');
+  const [ratingModal, setRatingModal] = useState({ isOpen: false, booking: null });
 
   // Fetch user's bookings
   const { data: bookings = [], isLoading, error } = useQuery({
@@ -50,10 +54,50 @@ const Bookings = () => {
     }
   });
 
+  // Create review mutation
+  const createReviewMutation = useMutation({
+    mutationFn: reviewsService.createReview,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['bookings']);
+      setRatingModal({ isOpen: false, booking: null });
+      toast.success('Thank you for your rating!');
+    },
+    onError: (error) => {
+      console.error('Failed to submit rating:', error);
+      toast.error(error.response?.data?.error || 'Failed to submit rating. Please try again.');
+    }
+  });
+
   const handleCancelBooking = async (bookingId) => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
       cancelBookingMutation.mutate(bookingId);
     }
+  };
+
+  const handleRateDriver = (booking) => {
+    setRatingModal({ isOpen: true, booking });
+  };
+
+  const handleSubmitRating = async (ratingData) => {
+    if (!ratingModal.booking) return;
+    
+    const booking = ratingModal.booking;
+    const driverId = booking.ride_offer?.driver_user_id?._id || 
+                     booking.ride_offer?.driver_user_id ||
+                     booking.ride_offer?.driver?._id;
+
+    if (!driverId) {
+      toast.error('Driver information not available');
+      return;
+    }
+
+    createReviewMutation.mutate({
+      booking_id: booking._id,
+      reviewee_user_id: driverId,
+      rating: ratingData.rating,
+      comment: ratingData.comment,
+      review_type: 'rider_to_driver'
+    });
   };
 
   const getStatusColor = (status) => {
@@ -368,6 +412,25 @@ const Bookings = () => {
                             {cancelBookingMutation.isLoading ? 'Cancelling...' : 'Cancel'}
                           </button>
                         )}
+
+                        {/* Rate Driver Button for Completed Rides */}
+                        {booking.status === 'completed' && !booking.hasReviewed && (
+                          <button
+                            onClick={() => handleRateDriver(booking)}
+                            className="flex items-center px-4 py-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors border border-yellow-200"
+                          >
+                            <FaStar className="mr-2" />
+                            Rate Driver
+                          </button>
+                        )}
+
+                        {/* Already Rated Message */}
+                        {booking.status === 'completed' && booking.hasReviewed && (
+                          <div className="flex items-center px-4 py-2 text-green-600 bg-green-50 rounded-lg">
+                            <FaCheck className="mr-2" />
+                            <span className="text-sm font-medium">Rated</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Contact Info */}
@@ -387,6 +450,19 @@ const Bookings = () => {
           )}
         </div>
       </div>
+
+      {/* Rating Modal */}
+      <RatingModal
+        isOpen={ratingModal.isOpen}
+        onClose={() => setRatingModal({ isOpen: false, booking: null })}
+        onSubmit={handleSubmitRating}
+        driverName={
+          ratingModal.booking?.ride_offer?.driver
+            ? `${ratingModal.booking.ride_offer.driver.first_name} ${ratingModal.booking.ride_offer.driver.last_name}`
+            : 'the driver'
+        }
+        isSubmitting={createReviewMutation.isLoading}
+      />
     </div>
   );
 };
