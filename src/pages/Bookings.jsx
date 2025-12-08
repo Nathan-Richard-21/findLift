@@ -201,8 +201,7 @@ const Bookings = () => {
             <nav className="flex">
               {[
                 { key: 'all', label: 'All Bookings', count: bookings.length },
-                { key: 'requested', label: 'Pending', count: bookings.filter(b => b.status === 'requested' || b.status === 'pending').length },
-                { key: 'confirmed', label: 'Confirmed', count: bookings.filter(b => b.status === 'confirmed').length },
+                { key: 'requested', label: 'Awaiting Payment', count: bookings.filter(b => b.status === 'requested' || b.status === 'pending').length },
                 { key: 'completed', label: 'Completed', count: bookings.filter(b => b.status === 'completed').length },
                 { key: 'cancelled', label: 'Cancelled', count: bookings.filter(b => b.status === 'cancelled').length }
               ].map((tab) => (
