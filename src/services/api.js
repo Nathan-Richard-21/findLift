@@ -29,15 +29,23 @@ api.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`);
     
-    // Get token from cookie and add to Authorization header
-    // This is needed because cookies from www.findlift.co.za can't be sent to find-lift-back.vercel.app
-    const token = getTokenFromCookie();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log(`🔑 Added Authorization header (token length: ${token.length})`);
+    // Skip adding auth header for login/register/google auth endpoints
+    const publicEndpoints = ['/auth/login', '/auth/register', '/auth/google'];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
+    if (!isPublicEndpoint) {
+      // Get token from cookie and add to Authorization header
+      // This is needed because cookies from www.findlift.co.za can't be sent to find-lift-back.vercel.app
+      const token = getTokenFromCookie();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log(`🔑 Added Authorization header (token length: ${token.length})`);
+      } else {
+        console.log('⚠️ No token found in cookies');
+        console.log('   Current cookies:', document.cookie);
+      }
     } else {
-      console.log('⚠️ No token found in cookies');
-      console.log('   Current cookies:', document.cookie);
+      console.log('ℹ️ Skipping Authorization header for public endpoint');
     }
     
     return config;

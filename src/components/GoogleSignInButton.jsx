@@ -49,6 +49,10 @@ const GoogleSignInButton = ({ onSuccess, onError }) => {
       if (result.data.success) {
         // Backend returns token in response body
         if (result.data.token) {
+          // Clear any old tokens first
+          document.cookie = 'token=; path=/; max-age=0';
+          localStorage.removeItem('token');
+          
           // Store in both cookie AND localStorage as fallback
           const isSecure = window.location.protocol === 'https:';
           const cookieString = `token=${result.data.token}; path=/; max-age=${7 * 24 * 60 * 60}${
@@ -63,6 +67,7 @@ const GoogleSignInButton = ({ onSuccess, onError }) => {
           const cookieSet = document.cookie.includes('token=');
           console.log('✅ Token cookie set manually:', cookieSet);
           console.log('✅ Token stored in localStorage');
+          console.log('✅ New token length:', result.data.token.length);
           
           if (!cookieSet) {
             console.error('❌ Failed to set cookie!');
