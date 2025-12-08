@@ -344,7 +344,7 @@ const Auth = () => {
           {/* Google Sign-In */}
           <GoogleSignInButton
             onSuccess={(data) => {
-              toast.success(`Welcome ${data.data.first_name}!`);
+              toast.success(`Welcome ${data.user?.first_name || 'back'}!`);
               refetch();
               navigate(from, { replace: true });
             }}
