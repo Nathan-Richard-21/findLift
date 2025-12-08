@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaCheckCircle, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
 import { paymentService } from '../services/paymentService';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get('payment_id');
 
@@ -27,6 +29,8 @@ const PaymentSuccess = () => {
       
       if (response.success) {
         setPayment(response.data);
+        // Invalidate bookings cache so fresh data is fetched
+        queryClient.invalidateQueries(['bookings']);
       } else {
         setError('Failed to verify payment status');
       }
