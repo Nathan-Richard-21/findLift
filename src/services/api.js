@@ -10,10 +10,30 @@ const api = axios.create({
   },
 });
 
-// Request interceptor for debugging
+// Helper to get token from cookie
+const getTokenFromCookie = () => {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'token') {
+      return value;
+    }
+  }
+  return null;
+};
+
+// Request interceptor to add token from cookie to Authorization header
 api.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`);
+    
+    // Get token from cookie and add to Authorization header
+    // This is needed because cookies from www.findlift.co.za can't be sent to find-lift-back.vercel.app
+    const token = getTokenFromCookie();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
     return config;
   },
   (error) => {
