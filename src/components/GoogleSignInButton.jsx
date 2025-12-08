@@ -47,6 +47,15 @@ const GoogleSignInButton = ({ onSuccess, onError }) => {
       });
 
       if (result.data.success) {
+        // Backend returns token in response body
+        // Since backend is on different domain, we need to manually set cookie
+        if (result.data.token) {
+          // Set cookie manually on frontend domain
+          document.cookie = `token=${result.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; ${
+            window.location.protocol === 'https:' ? 'secure; samesite=strict' : ''
+          }`;
+          console.log('✅ Token cookie set manually from response');
+        }
         onSuccess(result.data);
       } else {
         onError(result.data.error || 'Google sign-in failed');
