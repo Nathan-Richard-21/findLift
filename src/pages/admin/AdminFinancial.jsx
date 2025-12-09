@@ -80,6 +80,11 @@ const AdminFinancial = () => {
   };
 
   const exportToPDF = () => {
+    if (!stats) {
+      alert('No statistics available to export');
+      return;
+    }
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -100,38 +105,36 @@ const AdminFinancial = () => {
     doc.setFontSize(10);
     let yPos = 55;
 
-    if (stats) {
-      const statsData = [
-        ['Total Users', stats.totalUsers.toString()],
-        ['Total Riders', stats.totalRiders.toString()],
-        ['Total Drivers', stats.totalDrivers.toString()],
-        ['', ''],
-        ['Total Revenue', formatCurrency(stats.totalPaymentsReceived)],
-        ['Driver Earnings', formatCurrency(stats.totalDriverEarnings)],
-        ['Platform Revenue', formatCurrency(stats.totalPaymentsReceived - stats.totalDriverEarnings)],
-        ['Recent Revenue (30 days)', formatCurrency(stats.recentRevenue)],
-        ['', ''],
-        ['Total Bookings', stats.totalBookings.toString()],
-        ['Completed Bookings', stats.completedBookings.toString()],
-        ['Confirmed Bookings', stats.confirmedBookings.toString()],
-        ['', ''],
-        ['Total Rides', stats.totalRides.toString()],
-        ['Active Rides', stats.activeRides.toString()]
-      ];
+    const statsData = [
+      ['Total Users', (stats.users?.total || 0).toString()],
+      ['Total Riders', (stats.users?.riders || 0).toString()],
+      ['Total Drivers', (stats.users?.drivers || 0).toString()],
+      ['', ''],
+      ['Total Revenue', formatCurrency(stats.payments?.totalRevenue || 0)],
+      ['Driver Earnings', formatCurrency(stats.payments?.totalDriverEarnings || 0)],
+      ['Platform Revenue', formatCurrency((stats.payments?.totalRevenue || 0) - (stats.payments?.totalDriverEarnings || 0))],
+      ['Recent Revenue (30 days)', formatCurrency(stats.payments?.recentRevenue || 0)],
+      ['', ''],
+      ['Total Bookings', (stats.bookings?.total || 0).toString()],
+      ['Completed Bookings', (stats.bookings?.completed || 0).toString()],
+      ['Confirmed Bookings', (stats.bookings?.confirmed || 0).toString()],
+      ['', ''],
+      ['Total Rides', (stats.rides?.total || 0).toString()],
+      ['Active Rides', (stats.rides?.active || 0).toString()]
+    ];
 
-      doc.autoTable({
-        startY: yPos,
-        head: [['Metric', 'Value']],
-        body: statsData,
-        theme: 'grid',
-        headStyles: { fillColor: [41, 98, 255] },
-        columnStyles: {
-          0: { fontStyle: 'bold' }
-        }
-      });
+    doc.autoTable({
+      startY: yPos,
+      head: [['Metric', 'Value']],
+      body: statsData,
+      theme: 'grid',
+      headStyles: { fillColor: [41, 98, 255] },
+      columnStyles: {
+        0: { fontStyle: 'bold' }
+      }
+    });
 
-      yPos = doc.lastAutoTable.finalY + 15;
-    }
+    yPos = doc.lastAutoTable.finalY + 15;
 
     // Add payments table
     doc.setFontSize(14);
@@ -141,10 +144,10 @@ const AdminFinancial = () => {
       payment.payment_id ? payment.payment_id.substring(0, 25) : 'N/A',
       payment.rider_user_id ? `${payment.rider_user_id.first_name} ${payment.rider_user_id.last_name}` : 'N/A',
       payment.driver_user_id ? `${payment.driver_user_id.first_name} ${payment.driver_user_id.last_name}` : 'N/A',
-      formatCurrency(payment.rider_payment_amount),
-      formatCurrency(payment.driver_price),
-      payment.status,
-      formatDate(payment.createdAt)
+      formatCurrency(payment.rider_payment_amount || 0),
+      formatCurrency(payment.driver_price || 0),
+      payment.status || 'N/A',
+      payment.createdAt ? formatDate(payment.createdAt) : 'N/A'
     ]);
 
     doc.autoTable({
@@ -227,10 +230,10 @@ const AdminFinancial = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.users?.total || 0}</p>
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs text-gray-500">Riders: {stats.totalRiders}</p>
-                    <p className="text-xs text-gray-500">Drivers: {stats.totalDrivers}</p>
+                    <p className="text-xs text-gray-500">Riders: {stats.users?.riders || 0}</p>
+                    <p className="text-xs text-gray-500">Drivers: {stats.users?.drivers || 0}</p>
                   </div>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-lg">
@@ -244,9 +247,9 @@ const AdminFinancial = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
-                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalPaymentsReceived)}</p>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.payments?.totalRevenue || 0)}</p>
                   <div className="mt-2">
-                    <p className="text-xs text-gray-500">Recent (30d): {formatCurrency(stats.recentRevenue)}</p>
+                    <p className="text-xs text-gray-500">Recent (30d): {formatCurrency(stats.payments?.recentRevenue || 0)}</p>
                   </div>
                 </div>
                 <div className="p-3 bg-green-100 rounded-lg">
@@ -260,7 +263,7 @@ const AdminFinancial = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Driver Earnings</p>
-                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalDriverEarnings)}</p>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.payments?.totalDriverEarnings || 0)}</p>
                   <div className="mt-2">
                     <p className="text-xs text-gray-500">85% of total revenue</p>
                   </div>
@@ -277,7 +280,7 @@ const AdminFinancial = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Platform Revenue</p>
                   <p className="text-3xl font-bold text-gray-900">
-                    {formatCurrency(stats.totalPaymentsReceived - stats.totalDriverEarnings)}
+                    {formatCurrency((stats.payments?.totalRevenue || 0) - (stats.payments?.totalDriverEarnings || 0))}
                   </p>
                   <div className="mt-2">
                     <p className="text-xs text-gray-500">15% commission</p>
@@ -294,10 +297,10 @@ const AdminFinancial = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Bookings</p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalBookings}</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{stats.bookings?.total || 0}</p>
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500">Completed: {stats.completedBookings}</p>
-                    <p className="text-xs text-gray-500">Confirmed: {stats.confirmedBookings}</p>
+                    <p className="text-xs text-gray-500">Completed: {stats.bookings?.completed || 0}</p>
+                    <p className="text-xs text-gray-500">Confirmed: {stats.bookings?.confirmed || 0}</p>
                   </div>
                 </div>
                 <div className="p-3 bg-indigo-100 rounded-lg">
@@ -311,9 +314,9 @@ const AdminFinancial = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Rides</p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalRides}</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{stats.rides?.total || 0}</p>
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500">Active: {stats.activeRides}</p>
+                    <p className="text-xs text-gray-500">Active: {stats.rides?.active || 0}</p>
                   </div>
                 </div>
                 <div className="p-3 bg-pink-100 rounded-lg">
