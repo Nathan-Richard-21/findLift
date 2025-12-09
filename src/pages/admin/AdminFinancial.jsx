@@ -123,7 +123,7 @@ const AdminFinancial = () => {
       ['Active Rides', (stats.rides?.active || 0).toString()]
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [['Metric', 'Value']],
       body: statsData,
@@ -150,7 +150,7 @@ const AdminFinancial = () => {
       payment.createdAt ? formatDate(payment.createdAt) : 'N/A'
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos + 5,
       head: [['Payment ID', 'Rider', 'Driver', 'Amount', 'Driver Earning', 'Status', 'Date']],
       body: paymentsData,
