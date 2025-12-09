@@ -187,18 +187,18 @@ const Bookings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
-          <p className="text-gray-600">Manage your ride bookings</p>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
+          <p className="text-sm md:text-base text-gray-600">Manage your ride bookings</p>
         </div>
 
         {/* Filter Tabs */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex">
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="flex min-w-max md:min-w-0">
               {[
                 { key: 'all', label: 'All Bookings', count: bookings.length },
                 { key: 'requested', label: 'Awaiting Payment', count: bookings.filter(b => b.status === 'requested' || b.status === 'pending').length },
@@ -209,7 +209,7 @@ const Bookings = () => {
                 <button
                   key={tab.key}
                   onClick={() => setFilterStatus(tab.key)}
-                  className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  className={`px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     filterStatus === tab.key
                       ? 'border-green-500 text-green-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -223,7 +223,7 @@ const Bookings = () => {
         </div>
 
         {/* Bookings List */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {filteredBookings.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
               <FaTicketAlt className="text-4xl text-gray-400 mx-auto mb-4" />
@@ -247,84 +247,84 @@ const Bookings = () => {
             </div>
           ) : (
             filteredBookings.map((booking) => (
-              <div key={booking._id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
+              <div key={booking._id} className="bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <div className="p-4 md:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
                     {/* Route and Status */}
                     <div className="flex-1">
-                      <div className="flex items-center mb-2">
-                        <FaMapMarkerAlt className="text-green-600 mr-2" />
-                        <h3 className="text-lg font-semibold">
+                      <div className="flex items-start mb-2">
+                        <FaMapMarkerAlt className="text-green-600 mr-2 mt-1 flex-shrink-0" />
+                        <h3 className="text-base md:text-lg font-semibold leading-tight">
                           {booking.ride_offer?.origin?.split(',')[0] || 'Unknown'} → {booking.ride_offer?.destination?.split(',')[0] || 'Unknown'}
                         </h3>
                       </div>
-                      <p className="text-gray-600 text-sm mb-3">
+                      <p className="text-gray-600 text-xs md:text-sm mb-3 pl-6">
                         {booking.ride_offer?.origin} to {booking.ride_offer?.destination}
                       </p>
                     </div>
 
                     {/* Status Badge */}
-                    <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
+                    <div className={`flex items-center px-3 py-1.5 rounded-full text-xs md:text-sm font-medium border ${getStatusColor(booking.status)} self-start sm:self-auto`}>
                       {getStatusIcon(booking.status)}
                       <span className="ml-2 capitalize">{booking.status}</span>
                     </div>
                   </div>
 
                   {/* Trip Details Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="flex items-center text-gray-600">
-                      <FaCalendarAlt className="mr-2 text-green-600" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
+                    <div className="flex items-start text-gray-600">
+                      <FaCalendarAlt className="mr-2 text-green-600 mt-1 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-gray-500">Date</p>
-                        <p className="font-medium">{new Date(booking.ride_offer?.date).toLocaleDateString()}</p>
+                        <p className="font-medium text-sm md:text-base">{new Date(booking.ride_offer?.date).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaClock className="mr-2 text-green-600" />
+                    <div className="flex items-start text-gray-600">
+                      <FaClock className="mr-2 text-green-600 mt-1 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-gray-500">Time</p>
-                        <p className="font-medium">{booking.ride_offer?.time}</p>
+                        <p className="font-medium text-sm md:text-base">{booking.ride_offer?.time}</p>
                       </div>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaUsers className="mr-2 text-green-600" />
+                    <div className="flex items-start text-gray-600">
+                      <FaUsers className="mr-2 text-green-600 mt-1 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-gray-500">Seats</p>
-                        <p className="font-medium">{booking.seats_booked}</p>
+                        <p className="font-medium text-sm md:text-base">{booking.seats_booked}</p>
                       </div>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaDollarSign className="mr-2 text-green-600" />
+                    <div className="flex items-start text-gray-600">
+                      <FaDollarSign className="mr-2 text-green-600 mt-1 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-gray-500">Total</p>
-                        <p className="font-medium">R{booking.seats_booked * (booking.ride_offer?.price_per_seat || 0)}</p>
+                        <p className="font-medium text-sm md:text-base">R{booking.seats_booked * (booking.ride_offer?.price_per_seat || 0)}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Driver Info */}
-                  <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                    <div className="flex items-center justify-between">
+                  <div className="bg-gray-50 rounded-lg md:rounded-xl p-3 md:p-4 mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                        <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3 flex-shrink-0">
                           {booking.ride_offer?.driver?.first_name?.[0] || 'D'}
                         </div>
-                        <div>
-                          <p className="font-medium">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm md:text-base">
                             {booking.ride_offer?.driver?.first_name} {booking.ride_offer?.driver?.last_name}
                           </p>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <FaPhone className="mr-1" />
-                            {booking.ride_offer?.driver?.phone || 'Not provided'}
+                          <div className="flex items-center text-xs md:text-sm text-gray-600">
+                            <FaPhone className="mr-1 flex-shrink-0" />
+                            <span className="truncate">{booking.ride_offer?.driver?.phone || 'Not provided'}</span>
                           </div>
                         </div>
                       </div>
                       
                       {/* Vehicle Info */}
-                      <div className="text-right">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <FaCar className="mr-1" />
-                          <span>
+                      <div className="sm:text-right pl-13 sm:pl-0">
+                        <div className="flex sm:justify-end items-center text-xs md:text-sm text-gray-600">
+                          <FaCar className="mr-1 flex-shrink-0" />
+                          <span className="truncate">
                             {booking.ride_offer?.vehicle?.make} {booking.ride_offer?.vehicle?.model}
                           </span>
                         </div>
@@ -338,8 +338,8 @@ const Bookings = () => {
                   {/* Special Requests */}
                   {booking.special_requests && (
                     <div className="mb-4">
-                      <p className="text-sm text-gray-600 font-medium mb-1">Special Requests:</p>
-                      <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">
+                      <p className="text-xs md:text-sm text-gray-600 font-medium mb-1">Special Requests:</p>
+                      <p className="text-xs md:text-sm text-gray-700 bg-blue-50 p-2 md:p-3 rounded-lg">
                         {booking.special_requests}
                       </p>
                     </div>
@@ -364,7 +364,7 @@ const Bookings = () => {
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
                           <div className="flex items-start">
                             <FaExclamationTriangle className="text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
-                            <div className="text-sm text-yellow-800">
+                            <div className="text-xs md:text-sm text-yellow-800">
                               <p className="font-semibold">Payment Required</p>
                               <p>Your booking has been confirmed by the driver. Please complete your payment to secure your seat.</p>
                             </div>
@@ -384,7 +384,7 @@ const Bookings = () => {
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
                         <div className="flex items-start">
                           <FaCheck className="text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <div className="text-sm text-green-800">
+                          <div className="text-xs md:text-sm text-green-800">
                             <p className="font-semibold">Payment Complete</p>
                             <p>Your booking is confirmed and paid. Contact the driver for pickup details.</p>
                           </div>
@@ -392,11 +392,11 @@ const Bookings = () => {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex flex-wrap gap-2 md:gap-3">
                         <button
                           onClick={() => navigate(`/ride/${booking.ride_offer_id?._id || booking.ride_offer_id}`)}
-                          className="flex items-center px-4 py-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                          className="flex items-center px-3 md:px-4 py-2 text-sm md:text-base text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
                         >
                           <FaEye className="mr-2" />
                           View Ride
@@ -406,7 +406,7 @@ const Bookings = () => {
                           <button
                             onClick={() => handleCancelBooking(booking._id)}
                             disabled={cancelBookingMutation.isLoading}
-                            className="flex items-center px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            className="flex items-center px-3 md:px-4 py-2 text-sm md:text-base text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                           >
                             <FaTimes className="mr-2" />
                             {cancelBookingMutation.isLoading ? 'Cancelling...' : 'Cancel'}
@@ -417,7 +417,7 @@ const Bookings = () => {
                         {booking.status === 'completed' && !booking.hasReviewed && (
                           <button
                             onClick={() => handleRateDriver(booking)}
-                            className="flex items-center px-4 py-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors border border-yellow-200"
+                            className="flex items-center px-3 md:px-4 py-2 text-sm md:text-base text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors border border-yellow-200"
                           >
                             <FaStar className="mr-2" />
                             Rate Driver
@@ -426,19 +426,19 @@ const Bookings = () => {
 
                         {/* Already Rated Message */}
                         {booking.status === 'completed' && booking.hasReviewed && (
-                          <div className="flex items-center px-4 py-2 text-green-600 bg-green-50 rounded-lg">
+                          <div className="flex items-center px-3 md:px-4 py-2 text-sm md:text-base text-green-600 bg-green-50 rounded-lg">
                             <FaCheck className="mr-2" />
-                            <span className="text-sm font-medium">Rated</span>
+                            <span className="font-medium">Rated</span>
                           </div>
                         )}
                       </div>
 
                       {/* Contact Info */}
                       {booking.status === 'confirmed' && booking.payment_status === 'paid' && (
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs md:text-sm text-gray-600">
                           <p className="flex items-center">
-                            <FaUser className="mr-1" />
-                            Contact driver for pickup details
+                            <FaUser className="mr-1 flex-shrink-0" />
+                            <span>Contact driver for pickup details</span>
                           </p>
                         </div>
                       )}

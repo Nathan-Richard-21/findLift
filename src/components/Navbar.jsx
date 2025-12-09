@@ -153,15 +153,21 @@ const Navbar = () => {
               
               {isAuthenticated ? (
                 <div className="flex flex-col space-y-3 pt-4 border-t border-gray-200">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
+                    <User className="w-4 h-4" />
+                    <span>Hi, {user?.first_name}</span>
+                  </div>
+                  
                   {user?.role === 'driver' && (
                     <Link
-                      to="/my-rides"
+                      to="/driver-dashboard"
                       onClick={() => setIsMenuOpen(false)}
                       className="text-base font-medium text-gray-600 hover:text-black transition-colors duration-200"
                     >
-                      My Rides
+                      Driver Dashboard
                     </Link>
                   )}
+                  
                   <Link
                     to="/bookings"
                     onClick={() => setIsMenuOpen(false)}
@@ -169,10 +175,34 @@ const Navbar = () => {
                   >
                     My Bookings
                   </Link>
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <User className="w-4 h-4" />
-                    <span>Signed in as {user?.first_name}</span>
-                  </div>
+                  
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-base font-medium text-gray-600 hover:text-black transition-colors duration-200"
+                  >
+                    Profile
+                  </Link>
+                  
+                  {user?.role === 'driver' && (
+                    <Link
+                      to="/vehicles"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-base font-medium text-gray-600 hover:text-black transition-colors duration-200"
+                    >
+                      My Vehicles
+                    </Link>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="text-base font-medium text-red-600 hover:text-red-700 transition-colors duration-200 text-left"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               ) : (
                 <Link

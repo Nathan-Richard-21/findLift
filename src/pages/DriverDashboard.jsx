@@ -132,72 +132,72 @@ const DriverDashboard = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your rides and bookings</p>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Driver Dashboard</h1>
+          <p className="text-sm md:text-base text-gray-600 mt-2">Manage your rides and bookings</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <FaCar className="text-blue-600 text-xl" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-sm p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center">
+              <div className="p-2 md:p-3 bg-blue-100 rounded-lg md:rounded-xl mb-2 md:mb-0 self-start">
+                <FaCar className="text-blue-600 text-base md:text-xl" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Total Rides</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalRides}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-xl">
-             
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold text-gray-900">R{stats.totalEarnings}</p>
+              <div className="md:ml-4">
+                <p className="text-xs md:text-sm text-gray-600">Total Rides</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.totalRides}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-xl">
-                <FaCheck className="text-yellow-600 text-xl" />
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-sm p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center">
+              <div className="p-2 md:p-3 bg-green-100 rounded-lg md:rounded-xl mb-2 md:mb-0 self-start">
+                <FaDollarSign className="text-green-600 text-base md:text-xl" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.completedRides}</p>
+              <div className="md:ml-4">
+                <p className="text-xs md:text-sm text-gray-600">Total Earnings</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">R{stats.totalEarnings}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-purple-100 rounded-xl">
-                <FaUsers className="text-purple-600 text-xl" />
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-sm p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center">
+              <div className="p-2 md:p-3 bg-yellow-100 rounded-lg md:rounded-xl mb-2 md:mb-0 self-start">
+                <FaCheck className="text-yellow-600 text-base md:text-xl" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">Rating</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.averageRating}/5</p>
+              <div className="md:ml-4">
+                <p className="text-xs md:text-sm text-gray-600">Completed</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.completedRides}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-sm p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center">
+              <div className="p-2 md:p-3 bg-purple-100 rounded-lg md:rounded-xl mb-2 md:mb-0 self-start">
+                <FaUsers className="text-purple-600 text-base md:text-xl" />
+              </div>
+              <div className="md:ml-4">
+                <p className="text-xs md:text-sm text-gray-600">Rating</p>
+                <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.averageRating}/5</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="border-b border-gray-200">
-            <nav className="flex">
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden">
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="flex min-w-max md:min-w-0">
               <button
                 onClick={() => setActiveTab('rides')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'rides'
                     ? 'border-green-500 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -207,7 +207,7 @@ const DriverDashboard = () => {
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'bookings'
                     ? 'border-green-500 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -217,7 +217,7 @@ const DriverDashboard = () => {
               </button>
               <button
                 onClick={() => setActiveTab('vehicle')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'vehicle'
                     ? 'border-green-500 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -228,15 +228,15 @@ const DriverDashboard = () => {
             </nav>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {/* My Rides Tab */}
             {activeTab === 'rides' && (
               <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">My Rides</h2>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3">
+                  <h2 className="text-lg md:text-xl font-semibold">My Rides</h2>
                   <button
                     onClick={() => navigate('/offer-ride')}
-                    className="btn-primary flex items-center"
+                    className="btn-primary flex items-center justify-center text-sm md:text-base"
                   >
                     <FaPlus className="mr-2" />
                     Offer New Ride
