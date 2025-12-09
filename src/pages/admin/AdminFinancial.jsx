@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaDollarSign, FaUsers, FaCar, FaChartLine, FaDownload, FaArrowLeft, FaSpinner, FaWallet } from 'react-icons/fa';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import api from '../../services/api';
 
 const AdminFinancial = () => {
@@ -111,8 +111,8 @@ const AdminFinancial = () => {
       ['Total Drivers', (stats.users?.drivers || 0).toString()],
       ['', ''],
       ['Total Revenue', formatCurrency(stats.payments?.totalRevenue || 0)],
+      ['Platform Commission', formatCurrency(stats.payments?.platformCommission || 0)],
       ['Driver Earnings', formatCurrency(stats.payments?.totalDriverEarnings || 0)],
-      ['Platform Revenue', formatCurrency((stats.payments?.totalRevenue || 0) - (stats.payments?.totalDriverEarnings || 0))],
       ['Recent Revenue (30 days)', formatCurrency(stats.payments?.recentRevenue || 0)],
       ['', ''],
       ['Total Bookings', (stats.bookings?.total || 0).toString()],
@@ -278,12 +278,12 @@ const AdminFinancial = () => {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Platform Revenue</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Platform Commission</p>
                   <p className="text-3xl font-bold text-gray-900">
-                    {formatCurrency((stats.payments?.totalRevenue || 0) - (stats.payments?.totalDriverEarnings || 0))}
+                    {formatCurrency(stats.payments?.platformCommission || 0)}
                   </p>
                   <div className="mt-2">
-                    <p className="text-xs text-gray-500">15% commission</p>
+                    <p className="text-xs text-gray-500">15% of rides</p>
                   </div>
                 </div>
                 <div className="p-3 bg-yellow-100 rounded-lg">
