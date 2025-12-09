@@ -33,6 +33,7 @@ import AdminKYCList from './pages/admin/AdminKYCList'
 import AdminKYCReview from './pages/admin/AdminKYCReview'
 import AdminRides from './pages/admin/AdminRides'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminFinancial from './pages/admin/AdminFinancial'
 // Payment pages
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
@@ -159,6 +160,7 @@ function App() {
             <Route path="admin/kyc/:sessionId" element={<AdminKYCReview />} />
             <Route path="admin/rides" element={<AdminRides />} />
             <Route path="admin/users" element={<AdminUsers />} />
+            <Route path="admin/financial" element={<AdminFinancial />} />
             {/* Payment routes */}
             <Route path="payment/mock" element={<MockPayment />} />
             <Route path="payment/success" element={<PaymentSuccess />} />
