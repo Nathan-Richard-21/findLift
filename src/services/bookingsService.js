@@ -22,7 +22,8 @@ export const bookingsService = {
       },
       // Ensure proper field mapping for consistent display
       passenger_name: booking.rider_user_id ? `${booking.rider_user_id.first_name} ${booking.rider_user_id.last_name}` : 'Unknown',
-      passenger_phone: booking.rider_user_id?.phone || 'N/A',
+      // Use contact_phone from booking (entered during booking) if available, otherwise fall back to user's profile phone
+      passenger_phone: booking.contact_phone || booking.rider_user_id?.phone || 'N/A',
       total_price: booking.total_amount || (booking.seats_booked * (booking.ride_offer_id?.price_per_seat || 0))
     }));
   },
@@ -65,7 +66,8 @@ export const bookingsService = {
     return bookings.map(booking => ({
       ...booking,
       passenger_name: booking.rider ? `${booking.rider.first_name} ${booking.rider.last_name}` : 'Unknown',
-      passenger_phone: booking.rider?.phone || 'N/A',
+      // Use contact_phone from booking (entered during booking) if available, otherwise fall back to user's profile phone
+      passenger_phone: booking.contact_phone || booking.rider?.phone || 'N/A',
       total_price: booking.seats_booked * (booking.ride_offer?.price_per_seat || 0)
     }));
   },
