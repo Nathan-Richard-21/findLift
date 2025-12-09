@@ -1,35 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  Button,
-  ButtonGroup,
-  CircularProgress,
-  Alert,
-  Pagination,
-  Stack
-} from '@mui/material';
-import {
-  Download as DownloadIcon,
-  TrendingUp as TrendingUpIcon,
-  People as PeopleIcon,
-  DirectionsCar as CarIcon,
-  AccountBalance as AccountBalanceIcon,
-  ArrowBack as ArrowBackIcon
-} from '@mui/icons-material';
+import { FaDollarSign, FaUsers, FaCar, FaTrendingUp, FaDownload, FaArrowLeft, FaSpinner, FaWallet, FaChartLine } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
@@ -118,17 +89,17 @@ const AdminFinancial = () => {
     });
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'success';
-      case 'processing':
-        return 'warning';
-      case 'failed':
-        return 'error';
-      default:
-        return 'default';
-    }
+  const getStatusBadge = (status) => {
+    const statusStyles = {
+      completed: 'bg-green-100 text-green-800',
+      processing: 'bg-yellow-100 text-yellow-800',
+      failed: 'bg-red-100 text-red-800'
+    };
+    return (
+      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
 
   const exportToPDF = () => {
@@ -190,7 +161,7 @@ const AdminFinancial = () => {
     doc.text('Recent Payments', 14, yPos);
 
     const paymentsData = payments.map(payment => [
-      payment.payment_id || 'N/A',
+      payment.payment_id ? payment.payment_id.substring(0, 25) : 'N/A',
       payment.rider_user_id ? `${payment.rider_user_id.first_name} ${payment.rider_user_id.last_name}` : 'N/A',
       payment.driver_user_id ? `${payment.driver_user_id.first_name} ${payment.driver_user_id.last_name}` : 'N/A',
       formatCurrency(payment.rider_payment_amount),
@@ -223,343 +194,341 @@ const AdminFinancial = () => {
 
   if (loading && !stats) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <CircularProgress />
-      </Box>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading financial data...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box>
-          <Typography variant="h4" component="h1">
-            Financial Dashboard
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-            View platform statistics and payment reports
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/admin/kyc')}
-          >
-            Back to Dashboard
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={exportToPDF}
-            disabled={!stats || payments.length === 0}
-          >
-            Download PDF Report
-          </Button>
-        </Stack>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Statistics Cards */}
-      {stats && (
-        <Grid container spacing={3} mb={4}>
-          {/* Users Statistics */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom variant="body2">
-                      Total Users
-                    </Typography>
-                    <Typography variant="h4">
-                      {stats.totalUsers}
-                    </Typography>
-                  </Box>
-                  <PeopleIcon sx={{ fontSize: 48, color: 'primary.main', opacity: 0.3 }} />
-                </Box>
-                <Box mt={2}>
-                  <Typography variant="body2" color="textSecondary">
-                    Riders: {stats.totalRiders}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Drivers: {stats.totalDrivers}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Total Revenue */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom variant="body2">
-                      Total Revenue
-                    </Typography>
-                    <Typography variant="h4">
-                      {formatCurrency(stats.totalPaymentsReceived)}
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon sx={{ fontSize: 48, color: 'success.main', opacity: 0.3 }} />
-                </Box>
-                <Box mt={2}>
-                  <Typography variant="body2" color="textSecondary">
-                    Recent (30d): {formatCurrency(stats.recentRevenue)}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Driver Earnings */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom variant="body2">
-                      Driver Earnings
-                    </Typography>
-                    <Typography variant="h4">
-                      {formatCurrency(stats.totalDriverEarnings)}
-                    </Typography>
-                  </Box>
-                  <CarIcon sx={{ fontSize: 48, color: 'info.main', opacity: 0.3 }} />
-                </Box>
-                <Box mt={2}>
-                  <Typography variant="body2" color="textSecondary">
-                    85% of total revenue
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Platform Revenue */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom variant="body2">
-                      Platform Revenue
-                    </Typography>
-                    <Typography variant="h4">
-                      {formatCurrency(stats.totalPaymentsReceived - stats.totalDriverEarnings)}
-                    </Typography>
-                  </Box>
-                  <AccountBalanceIcon sx={{ fontSize: 48, color: 'warning.main', opacity: 0.3 }} />
-                </Box>
-                <Box mt={2}>
-                  <Typography variant="body2" color="textSecondary">
-                    15% commission
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Bookings */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Bookings
-                </Typography>
-                <Typography variant="h5" mb={1}>
-                  {stats.totalBookings}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Completed: {stats.completedBookings}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Confirmed: {stats.confirmedBookings}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Rides */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Rides
-                </Typography>
-                <Typography variant="h5" mb={1}>
-                  {stats.totalRides}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Active: {stats.activeRides}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* Payments Table */}
-      <Card>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h6">
-              Payment History
-            </Typography>
-            <ButtonGroup size="small">
-              <Button
-                variant={statusFilter === 'all' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setStatusFilter('all');
-                  setPage(1);
-                }}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <FaDollarSign className="mr-3 text-green-600" />
+                Financial Dashboard
+              </h1>
+              <p className="text-gray-600 mt-1">View platform statistics and payment reports</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/admin/kyc')}
+                className="btn-secondary flex items-center gap-2"
               >
-                All
-              </Button>
-              <Button
-                variant={statusFilter === 'completed' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setStatusFilter('completed');
-                  setPage(1);
-                }}
+                <FaArrowLeft />
+                Back to Dashboard
+              </button>
+              <button
+                onClick={exportToPDF}
+                disabled={!stats || payments.length === 0}
+                className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Completed
-              </Button>
-              <Button
-                variant={statusFilter === 'processing' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setStatusFilter('processing');
-                  setPage(1);
-                }}
-              >
-                Processing
-              </Button>
-              <Button
-                variant={statusFilter === 'failed' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setStatusFilter('failed');
-                  setPage(1);
-                }}
-              >
-                Failed
-              </Button>
-            </ButtonGroup>
-          </Box>
+                <FaDownload />
+                Download PDF Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* Statistics Cards */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Total Users */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-500">Riders: {stats.totalRiders}</p>
+                    <p className="text-xs text-gray-500">Drivers: {stats.totalDrivers}</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <FaUsers className="text-3xl text-blue-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Total Revenue */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalPaymentsReceived)}</p>
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500">Recent (30d): {formatCurrency(stats.recentRevenue)}</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <FaTrendingUp className="text-3xl text-green-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Driver Earnings */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Driver Earnings</p>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalDriverEarnings)}</p>
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500">85% of total revenue</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <FaCar className="text-3xl text-purple-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Platform Revenue */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Platform Revenue</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {formatCurrency(stats.totalPaymentsReceived - stats.totalDriverEarnings)}
+                  </p>
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500">15% commission</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-yellow-100 rounded-lg">
+                  <FaWallet className="text-3xl text-yellow-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Bookings Stats */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Bookings</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalBookings}</p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Completed: {stats.completedBookings}</p>
+                    <p className="text-xs text-gray-500">Confirmed: {stats.confirmedBookings}</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-indigo-100 rounded-lg">
+                  <FaChartLine className="text-3xl text-indigo-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Rides Stats */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Rides</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">{stats.totalRides}</p>
+                  <div className="space-y-1">
+                    <p className="text-xs text-gray-500">Active: {stats.activeRides}</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-pink-100 rounded-lg">
+                  <FaCar className="text-3xl text-pink-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payments Table */}
+        <div className="bg-white rounded-2xl shadow-sm">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Payment History</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setStatusFilter('all'); setPage(1); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    statusFilter === 'all' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => { setStatusFilter('completed'); setPage(1); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    statusFilter === 'completed' 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Completed
+                </button>
+                <button
+                  onClick={() => { setStatusFilter('processing'); setPage(1); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    statusFilter === 'processing' 
+                      ? 'bg-yellow-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Processing
+                </button>
+                <button
+                  onClick={() => { setStatusFilter('failed'); setPage(1); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    statusFilter === 'failed' 
+                      ? 'bg-red-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Failed
+                </button>
+              </div>
+            </div>
+          </div>
 
           {loading ? (
-            <Box display="flex" justifyContent="center" py={4}>
-              <CircularProgress />
-            </Box>
+            <div className="flex items-center justify-center py-12">
+              <FaSpinner className="animate-spin text-3xl text-blue-600" />
+            </div>
           ) : (
             <>
-              <TableContainer component={Paper} variant="outlined">
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Payment ID</TableCell>
-                      <TableCell>Rider</TableCell>
-                      <TableCell>Driver</TableCell>
-                      <TableCell align="right">Amount</TableCell>
-                      <TableCell align="right">Driver Earning</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Date</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Payment ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Rider
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Driver
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Amount
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Driver Earning
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {payments.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} align="center">
+                      <tr>
+                        <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                           No payments found
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ) : (
                       payments.map((payment) => (
-                        <TableRow key={payment._id} hover>
-                          <TableCell>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                        <tr key={payment._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm font-mono text-gray-900">
                               {payment.payment_id ? payment.payment_id.substring(0, 20) + '...' : 'N/A'}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
                             {payment.rider_user_id ? (
-                              <Box>
-                                <Typography variant="body2">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
                                   {payment.rider_user_id.first_name} {payment.rider_user_id.last_name}
-                                </Typography>
-                                <Typography variant="caption" color="textSecondary">
+                                </div>
+                                <div className="text-xs text-gray-500">
                                   {payment.rider_user_id.email}
-                                </Typography>
-                              </Box>
+                                </div>
+                              </div>
                             ) : (
-                              'N/A'
+                              <span className="text-sm text-gray-500">N/A</span>
                             )}
-                          </TableCell>
-                          <TableCell>
+                          </td>
+                          <td className="px-6 py-4">
                             {payment.driver_user_id ? (
-                              <Box>
-                                <Typography variant="body2">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
                                   {payment.driver_user_id.first_name} {payment.driver_user_id.last_name}
-                                </Typography>
-                                <Typography variant="caption" color="textSecondary">
+                                </div>
+                                <div className="text-xs text-gray-500">
                                   {payment.driver_user_id.email}
-                                </Typography>
-                              </Box>
+                                </div>
+                              </div>
                             ) : (
-                              'N/A'
+                              <span className="text-sm text-gray-500">N/A</span>
                             )}
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" fontWeight="bold">
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <span className="text-sm font-bold text-gray-900">
                               {formatCurrency(payment.rider_payment_amount)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" color="success.main">
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <span className="text-sm font-medium text-green-600">
                               {formatCurrency(payment.driver_price)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={payment.status}
-                              color={getStatusColor(payment.status)}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {getStatusBadge(payment.status)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-900">
                               {formatDate(payment.createdAt)}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
+                            </span>
+                          </td>
+                        </tr>
                       ))
                     )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                  </tbody>
+                </table>
+              </div>
 
+              {/* Pagination */}
               {totalPages > 1 && (
-                <Stack spacing={2} alignItems="center" mt={3}>
-                  <Pagination
-                    count={totalPages}
-                    page={page}
-                    onChange={(e, value) => setPage(value)}
-                    color="primary"
-                  />
-                </Stack>
+                <div className="px-6 py-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-700">
+                      Page {page} of {totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPage(Math.max(1, page - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setPage(Math.min(totalPages, page + 1))}
+                        disabled={page === totalPages}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
             </>
           )}
-        </CardContent>
-      </Card>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
 
