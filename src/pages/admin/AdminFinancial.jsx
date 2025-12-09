@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaDollarSign, FaUsers, FaCar, FaChartLine, FaDownload, FaArrowLeft, FaSpinner, FaWallet } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import api from '../../services/api';
 
 const AdminFinancial = () => {
   const navigate = useNavigate();
@@ -25,48 +26,24 @@ const AdminFinancial = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/admin/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch statistics');
-      }
-
-      const data = await response.json();
-      setStats(data.data);
+      const response = await api.get('/payments/admin/stats');
+      setStats(response.data.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message);
     }
   };
 
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const statusParam = statusFilter !== 'all' ? `&status=${statusFilter}` : '';
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/payments/admin/all?page=${page}&limit=${limit}${statusParam}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch payments');
-      }
-
-      const data = await response.json();
-      setPayments(data.data.payments);
-      setTotalPages(data.data.pagination.totalPages);
+      const response = await api.get(`/payments/admin/all?page=${page}&limit=${limit}${statusParam}`);
+      
+      setPayments(response.data.data.payments);
+      setTotalPages(response.data.data.pagination.totalPages);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }
