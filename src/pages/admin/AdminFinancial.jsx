@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaDollarSign, FaUsers, FaCar, FaTrendingUp, FaDownload, FaArrowLeft, FaSpinner, FaWallet, FaChartLine } from 'react-icons/fa';
+import { FaDollarSign, FaUsers, FaCar, FaChartLine, FaDownload, FaArrowLeft, FaSpinner, FaWallet } from 'react-icons/fa';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
@@ -273,7 +273,7 @@ const AdminFinancial = () => {
                   </div>
                 </div>
                 <div className="p-3 bg-green-100 rounded-lg">
-                  <FaTrendingUp className="text-3xl text-green-600" />
+                  <FaDollarSign className="text-3xl text-green-600" />
                 </div>
               </div>
             </div>
