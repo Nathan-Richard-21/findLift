@@ -26,7 +26,7 @@ const AdminFinancial = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/admin/stats`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/payments/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -49,7 +49,7 @@ const AdminFinancial = () => {
       const token = localStorage.getItem('token');
       const statusParam = statusFilter !== 'all' ? `&status=${statusFilter}` : '';
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/payments/admin/all?page=${page}&limit=${limit}${statusParam}`,
+        `${import.meta.env.VITE_API_URL}/payments/admin/all?page=${page}&limit=${limit}${statusParam}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
