@@ -93,10 +93,20 @@ api.interceptors.response.use(
 export const authService = {
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
+    // Store token in localStorage for mobile Safari compatibility
+    if (response.data?.data?.token) {
+      localStorage.setItem('token', response.data.data.token);
+      console.log('✅ Token stored in localStorage for mobile compatibility');
+    }
     return response.data;
   },
   login: async (credentials) => {
     const response = await api.post('/auth/login', credentials);
+    // Store token in localStorage for mobile Safari compatibility
+    if (response.data?.data?.token) {
+      localStorage.setItem('token', response.data.data.token);
+      console.log('✅ Token stored in localStorage for mobile compatibility');
+    }
     return response.data;
   },
   logout: async () => {
