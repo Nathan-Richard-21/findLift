@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../App';
@@ -230,8 +230,11 @@ const Profile = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         disabled={!isEditing}
+                        placeholder="0712345678"
+                        maxLength={10}
                         className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-50"
                       />
+                      <p className="text-xs text-gray-500 mt-1">10 digits starting with 0</p>
                     </div>
                   </div>
 

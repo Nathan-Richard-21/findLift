@@ -109,10 +109,15 @@ const Auth = () => {
         return
       }
       
-      // Format phone number to E.164 format if provided
-      let phone = formData.phone.trim()
-      if (phone && !phone.startsWith('+')) {
-        phone = '+1' + phone.replace(/\D/g, '') // Assuming US numbers, remove non-digits
+      // Validate and format phone number (SA 10-digit format starting with 0)
+      let phone = formData.phone.trim().replace(/\D/g, '') // Remove non-digits
+      if (!phone.startsWith('0')) {
+        toast.error('Phone number must start with 0')
+        return
+      }
+      if (phone.length !== 10) {
+        toast.error('Phone number must be exactly 10 digits')
+        return
       }
       
       registerMutation.mutate({
@@ -211,9 +216,10 @@ const Auth = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     className="input"
-                    placeholder="+27123456789"
+                    placeholder="0712345678"
+                    maxLength={10}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Format: +27123456789 (E.164 format)</p>
+                  <p className="text-xs text-gray-500 mt-1">10 digits starting with 0 (e.g., 0712345678)</p>
                 </div>
               </>
             )}

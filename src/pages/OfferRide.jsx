@@ -6,6 +6,7 @@ import { ridesService } from '../services/ridesService'
 import { vehiclesService } from '../services/vehiclesService'
 import { kycService } from '../services/kycService'
 import { FaMapMarkerAlt, FaCalendarAlt, FaClock, FaUsers, FaDollarSign, FaCar, FaPlus, FaMinus, FaHourglassHalf, FaCheckCircle } from 'react-icons/fa'
+import EmailVerificationBanner from '../components/EmailVerificationBanner'
 
 const OfferRide = () => {
   const { user, isAuthenticated } = useAuth()
@@ -349,6 +350,35 @@ const OfferRide = () => {
   // Check if user is a driver - regardless of driverProfile existence
   // We check verification status directly from the verificationStatus API response
   if (user && user.role === 'driver') {
+    // Check if email is verified first
+    if (!user.isEmailVerified) {
+      console.log('📧 DRIVER EMAIL NOT VERIFIED - Showing verification required page');
+      return (
+        <div className="min-h-screen bg-gray-50 py-16">
+          <div className="max-w-3xl mx-auto px-4">
+            <EmailVerificationBanner user={user} />
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-100 rounded-full mb-6">
+                <FaHourglassHalf className="text-4xl text-amber-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Email Verification Required
+              </h1>
+              <p className="text-lg text-gray-600 mb-6">
+                You need to verify your email address before you can offer rides.
+                Check your inbox for a verification link.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                <p className="text-amber-700 text-sm">
+                  <strong>Email sent to:</strong> {user.email}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     // Debug logging
     console.log('🔴 DRIVER USER DETECTED - Checking Verification Status');
     console.log('🔴 Verification Status Data:', verificationStatus);

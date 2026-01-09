@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/api';
-import { FaCar, FaUser, FaEnvelope, FaLock, FaPhone, FaCheckCircle } from 'react-icons/fa';
+import { FaCar, FaUser, FaEnvelope, FaLock, FaPhone, FaCheckCircle, FaPaperPlane } from 'react-icons/fa';
 
 const DriverSignup = () => {
   const navigate = useNavigate();
@@ -16,6 +16,8 @@ const DriverSignup = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -45,6 +47,13 @@ const DriverSignup = () => {
       return;
     }
 
+    // Validate phone number (SA 10-digit format)
+    const phone = formData.phone.trim().replace(/\D/g, '');
+    if (!phone.startsWith('0') || phone.length !== 10) {
+      setError('Phone number must be 10 digits starting with 0 (e.g., 0712345678)');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -61,16 +70,10 @@ const DriverSignup = () => {
       });
 
       if (response.success) {
-        // Automatically log in after registration
-        const loginResponse = await authService.login({
-          email: formData.email,
-          password: formData.password
-        });
-
-        if (loginResponse.success) {
-          // Refetch user data to update auth context
-          window.location.href = '/verify'; // Use full page reload to ensure auth context is updated
-        }
+        // Show email verification prompt instead of redirecting
+        setRegistrationSuccess(true);
+        setRegisteredEmail(formData.email);
+        // Don't auto-login - require email verification first
       }
     } catch (err) {
       console.error('Registration error:', err.response?.data);
@@ -107,44 +110,106 @@ const DriverSignup = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-600 rounded-full mb-4">
-            <FaCar className="text-4xl text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Become a Driver
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Join our community and start earning by offering rides
-          </p>
-        </div>
+        {/* Email Verification Success Screen */}
+        {registrationSuccess ? (
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FaPaperPlane className="text-4xl text-green-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              Check Your Email! 📧
+            </h1>
+            <p className="text-lg text-gray-600 mb-6">
+              We've sent a verification link to:
+            </p>
+            <div className="bg-green-50 rounded-xl p-4 mb-6">
+              <p className="text-xl font-semibold text-green-800">{registeredEmail}</p>
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+              <h3 className="font-semibold text-amber-800 mb-2">⚠️ Important</h3>
+              <p className="text-amber-700 text-sm">
+                You must verify your email before you can log in and start offering rides. 
+                The verification link expires in <strong>24 hours</strong>.
+              </p>
+            </div>
 
-        {/* Benefits */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Driver Benefits</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-start">
-              <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium">Flexible Schedule</h3>
-                <p className="text-sm text-gray-600">Drive when you want</p>
-              </div>
+            <div className="text-left bg-gray-50 rounded-xl p-4 mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2">Next Steps:</h3>
+              <ol className="text-sm text-gray-600 space-y-2">
+                <li className="flex items-start">
+                  <span className="bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 mt-0.5 flex-shrink-0">1</span>
+                  Open your email inbox
+                </li>
+                <li className="flex items-start">
+                  <span className="bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 mt-0.5 flex-shrink-0">2</span>
+                  Click the "Verify My Email" button in the email
+                </li>
+                <li className="flex items-start">
+                  <span className="bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 mt-0.5 flex-shrink-0">3</span>
+                  Log in to complete your driver verification
+                </li>
+              </ol>
             </div>
-            <div className="flex items-start">
-              <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium">Extra Income</h3>
-                <p className="text-sm text-gray-600">Earn money on your route</p>
+
+            <p className="text-gray-500 text-sm mb-6">
+              Can't find the email? Check your spam folder or{' '}
+              <button 
+                onClick={() => setRegistrationSuccess(false)}
+                className="text-green-600 hover:text-green-700 font-medium underline"
+              >
+                try registering again
+              </button>
+            </p>
+
+            <Link
+              to="/auth/login"
+              className="inline-flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+            >
+              <FaEnvelope className="mr-2" />
+              I've Verified - Go to Login
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-600 rounded-full mb-4">
+                <FaCar className="text-4xl text-white" />
               </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Become a Driver
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Join our community and start earning by offering rides
+              </p>
             </div>
-            <div className="flex items-start">
-              <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium">Safe Platform</h3>
-                <p className="text-sm text-gray-600">Verified riders only</p>
-              </div>
-            </div>
+
+            {/* Benefits */}
+            <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+              <h2 className="text-lg font-semibold mb-4">Driver Benefits</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start">
+                  <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-medium">Flexible Schedule</h3>
+                    <p className="text-sm text-gray-600">Drive when you want</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-medium">Extra Income</h3>
+                    <p className="text-sm text-gray-600">Earn money on your route</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-medium">Safe Platform</h3>
+                    <p className="text-sm text-gray-600">Verified riders only</p>
+                  </div>
+                </div>
             <div className="flex items-start">
               <FaCheckCircle className="text-green-600 mt-1 mr-3 flex-shrink-0" />
               <div>
@@ -236,10 +301,11 @@ const DriverSignup = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="+1234567890"
+                  placeholder="0712345678"
+                  maxLength={10}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Format: +1234567890 (E.164 format)</p>
+              <p className="text-xs text-gray-500 mt-1">10 digits starting with 0 (e.g., 0712345678)</p>
             </div>
 
             <div>
@@ -350,6 +416,8 @@ const DriverSignup = () => {
             </li>
           </ul>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -38,6 +38,8 @@ import AdminFinancial from './pages/admin/AdminFinancial'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
 import MockPayment from './pages/MockPayment'
+// Email verification
+import VerifyEmail from './pages/VerifyEmail'
 import { createContext, useContext, useState } from 'react'
 
 // Auth Context
@@ -144,6 +146,7 @@ function App() {
             <Route path="auth/signup" element={<Auth />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="reset-password/:token" element={<ResetPassword />} />
+            <Route path="verify-email/:token" element={<VerifyEmail />} />
             <Route path="driver/signup" element={<DriverSignup />} />
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="terms" element={<TermsOfService />} />

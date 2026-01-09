@@ -52,6 +52,7 @@ const CaptureDocuments = () => {
     licenseClass: '',
     expiryDate: ''
   });
+  const [validationErrors, setValidationErrors] = useState({});
 
   // Initialize KYC session with personal info
   useEffect(() => {
@@ -229,14 +230,43 @@ const CaptureDocuments = () => {
   };
 
   const handleInputChange = (e) => {
-    setPersonalInfo({ ...personalInfo, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setPersonalInfo({ ...personalInfo, [name]: value });
+    
+    // Clear validation error when user types
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // Validate ID number (must be 13 digits)
+  const validateIdNumber = (idNumber) => {
+    if (!idNumber) return true; // Optional during typing
+    const cleanId = idNumber.replace(/\D/g, '');
+    return /^\d{13}$/.test(cleanId);
+  };
+
+  // Validate license number (must be numeric)
+  const validateLicenseNumber = (licenseNumber) => {
+    if (!licenseNumber) return true; // Optional during typing
+    // SA driving license numbers are typically numeric
+    return /^\d+$/.test(licenseNumber.replace(/\s/g, ''));
   };
 
   const canProceed = () => {
     const basicRequirements = selfieCompleted && docFrontCompleted && 
                              (docType === 'passport' || docBackCompleted);
     
+    // Validate ID number is 13 digits
+    if (personalInfo.idNumber && !validateIdNumber(personalInfo.idNumber)) {
+      return false;
+    }
+    
     if (docType === 'drivers_license') {
+      // Validate license number is numeric
+      if (!personalInfo.licenseNumber || !validateLicenseNumber(personalInfo.licenseNumber)) {
+        return false;
+      }
       return basicRequirements && licenceCompleted && 
              personalInfo.licenseNumber && personalInfo.expiryDate;
     }
@@ -546,16 +576,25 @@ const CaptureDocuments = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Licence Number
+                    Licence Number *
                   </label>
                   <input
                     type="text"
                     name="licenseNumber"
                     value={personalInfo.licenseNumber}
                     onChange={handleInputChange}
-                    className="input-field w-full"
-                    placeholder="Enter licence number"
+                    className={`input-field w-full ${
+                      personalInfo.licenseNumber && !validateLicenseNumber(personalInfo.licenseNumber)
+                        ? 'border-red-500 focus:ring-red-500'
+                        : ''
+                    }`}
+                    placeholder="Enter licence number (numbers only)"
                   />
+                  {personalInfo.licenseNumber && !validateLicenseNumber(personalInfo.licenseNumber) && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Licence number must contain only numbers
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -590,20 +629,30 @@ const CaptureDocuments = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Identity Number (for verification)
+                    Identity Number (for verification) *
                   </label>
                   <input
                     type="text"
                     name="idNumber"
                     value={personalInfo.idNumber}
                     onChange={handleInputChange}
-                    className="input-field w-full"
-                    placeholder="Enter SA ID number"
+                    className={`input-field w-full ${
+                      personalInfo.idNumber && !validateIdNumber(personalInfo.idNumber)
+                        ? 'border-red-500 focus:ring-red-500'
+                        : ''
+                    }`}
+                    placeholder="Enter SA ID number (13 digits)"
                     maxLength="13"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    This helps us verify your identity and ensure document authenticity.
-                  </p>
+                  {personalInfo.idNumber && !validateIdNumber(personalInfo.idNumber) ? (
+                    <p className="text-xs text-red-500 mt-1">
+                      SA ID number must be exactly 13 digits
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1">
+                      This helps us verify your identity and ensure document authenticity.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

@@ -458,10 +458,11 @@ const RideDetails = () => {
                             value={bookingData.passenger_phone}
                             onChange={handleInputChange}
                             required
-                            placeholder="+27123456789"
+                            placeholder="0712345678"
+                            maxLength={10}
                             className={`input-field w-full ${validationErrors.contact_phone ? 'border-red-500' : ''}`}
                           />
-                          <p className="text-xs text-gray-500 mt-1">Format: +27123456789 (country code + number)</p>
+                          <p className="text-xs text-gray-500 mt-1">10 digits starting with 0 (e.g., 0712345678)</p>
                           <FieldError fieldName="contact_phone" />
                         </div>
 
@@ -490,9 +491,10 @@ const RideDetails = () => {
                             value={bookingData.emergency_contact_phone}
                             onChange={handleInputChange}
                             className={`input-field w-full ${validationErrors.emergency_contact_phone ? 'border-red-500' : ''}`}
-                            placeholder="+27123456789"
+                            placeholder="0712345678"
+                            maxLength={10}
                           />
-                          <p className="text-xs text-gray-500 mt-1">Format: +27123456789 (country code + number)</p>
+                          <p className="text-xs text-gray-500 mt-1">10 digits starting with 0 (e.g., 0712345678)</p>
                           <FieldError fieldName="emergency_contact_phone" />
                         </div>
 
