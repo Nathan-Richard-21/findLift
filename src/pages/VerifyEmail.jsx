@@ -79,13 +79,19 @@ const VerifyEmail = () => {
               </div>
             )}
 
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <p className="text-blue-800 text-sm">
+                <strong>Next Step:</strong> Please log in to your account to continue setting up your driver profile.
+              </p>
+            </div>
+
             <div className="space-y-3">
               <Link
-                to="/verify"
+                to="/auth/login"
                 className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
               >
                 <FaCar className="mr-2" />
-                Complete Driver Verification
+                Login to Continue
               </Link>
               <Link
                 to="/"
