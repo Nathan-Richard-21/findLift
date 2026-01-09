@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaCheckCircle, FaTimesCircle, FaSpinner, FaEnvelope, FaCar } from 'react-icons/fa';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -20,7 +20,7 @@ const VerifyEmail = () => {
       }
 
       try {
-        const response = await fetch(`${API_URL}/api/auth/verify-email/${token}`, {
+        const response = await fetch(`${API_URL}/auth/verify-email/${token}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'

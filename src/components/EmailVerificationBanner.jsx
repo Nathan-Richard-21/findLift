@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaExclamationTriangle, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const EmailVerificationBanner = ({ user, onVerificationSent }) => {
   const [sending, setSending] = useState(false);
@@ -19,7 +19,7 @@ const EmailVerificationBanner = ({ user, onVerificationSent }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/auth/send-verification-email`, {
+      const response = await fetch(`${API_URL}/auth/send-verification-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
