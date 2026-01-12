@@ -52,13 +52,17 @@ const ReviewConsent = () => {
     const hasIdFront = sessionData?.documents?.idDocument?.frontImage;
     const hasDriverLicense = sessionData?.documents?.driverLicense?.frontImage;
     const hasVehicle = sessionData?.documents?.vehicle?.frontImage;
+    const hasLicenseDisk = sessionData?.documents?.vehicle?.licenseDiskImage;
+    const hasLicenseDiskExpiry = sessionData?.documents?.vehicle?.licenseDiskExpiryDate;
     
-    if (!hasSelfie || !hasIdFront || !hasDriverLicense || !hasVehicle) {
+    if (!hasSelfie || !hasIdFront || !hasDriverLicense || !hasVehicle || !hasLicenseDisk || !hasLicenseDiskExpiry) {
       const missing = [];
       if (!hasSelfie) missing.push('Live Selfie');
       if (!hasIdFront) missing.push('ID Document');
       if (!hasDriverLicense) missing.push('Driver License');
       if (!hasVehicle) missing.push('Vehicle Photos');
+      if (!hasLicenseDisk) missing.push('License Disk Photo');
+      if (!hasLicenseDiskExpiry) missing.push('License Disk Expiry Date');
       
       alert(`⚠️ Missing Required Documents\n\nThe following documents are mandatory for driver verification:\n• ${missing.join('\n• ')}\n\nPlease go back and complete all required steps.`);
       return;
@@ -249,12 +253,26 @@ const ReviewConsent = () => {
                     </span>
                   </div>
                 )}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">License Disk Photo:</span>
+                  <span className={sessionData?.documents?.vehicle?.licenseDiskImage ? 'text-green-600' : 'text-red-600'}>
+                    {sessionData?.documents?.vehicle?.licenseDiskImage ? '✓ Uploaded' : '✗ Missing'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">License Disk Expiry:</span>
+                  <span className={sessionData?.documents?.vehicle?.licenseDiskExpiryDate ? 'text-green-600' : 'text-red-600'}>
+                    {sessionData?.documents?.vehicle?.licenseDiskExpiryDate 
+                      ? new Date(sessionData.documents.vehicle.licenseDiskExpiryDate).toLocaleDateString() 
+                      : '✗ Missing'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Missing Documents Warning */}
-          {(!sessionData?.documents?.selfie?.image || !sessionData?.documents?.driverLicense?.frontImage) && (
+          {(!sessionData?.documents?.selfie?.image || !sessionData?.documents?.driverLicense?.frontImage || !sessionData?.documents?.vehicle?.licenseDiskImage || !sessionData?.documents?.vehicle?.licenseDiskExpiryDate) && (
             <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-lg p-4">
               <div className="flex items-start">
                 <div className="text-red-600 text-xl mr-3">⚠️</div>
@@ -269,6 +287,12 @@ const ReviewConsent = () => {
                     )}
                     {!sessionData?.documents?.driverLicense?.frontImage && (
                       <li>• <strong>Driver License</strong> - Required to verify driving authorization</li>
+                    )}
+                    {!sessionData?.documents?.vehicle?.licenseDiskImage && (
+                      <li>• <strong>License Disk Photo</strong> - Required to verify vehicle registration</li>
+                    )}
+                    {!sessionData?.documents?.vehicle?.licenseDiskExpiryDate && (
+                      <li>• <strong>License Disk Expiry Date</strong> - Required to verify registration validity</li>
                     )}
                   </ul>
                   <p className="text-sm text-red-700 mt-3 font-medium">
@@ -296,13 +320,13 @@ const ReviewConsent = () => {
 
           <button
             onClick={handleSubmit}
-            disabled={!consented || isSubmitting || !sessionData?.documents?.selfie?.image || !sessionData?.documents?.driverLicense?.frontImage}
+            disabled={!consented || isSubmitting || !sessionData?.documents?.selfie?.image || !sessionData?.documents?.driverLicense?.frontImage || !sessionData?.documents?.vehicle?.licenseDiskImage || !sessionData?.documents?.vehicle?.licenseDiskExpiryDate}
             className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Submitting...' : 'Submit for verification'}
           </button>
           
-          {(!sessionData?.documents?.selfie?.image || !sessionData?.documents?.driverLicense?.frontImage) && (
+          {(!sessionData?.documents?.selfie?.image || !sessionData?.documents?.driverLicense?.frontImage || !sessionData?.documents?.vehicle?.licenseDiskImage || !sessionData?.documents?.vehicle?.licenseDiskExpiryDate) && (
             <p className="text-sm text-red-600 text-center mt-3">
               ⚠️ Complete all required documents to enable submission
             </p>

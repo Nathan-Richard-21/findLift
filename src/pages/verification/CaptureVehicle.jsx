@@ -14,21 +14,24 @@ const CaptureVehicle = () => {
     model: '',
     year: '',
     color: '',
-    licensePlate: ''
+    licensePlate: '',
+    licenseDiskExpiryDate: ''
   });
 
   const [photos, setPhotos] = useState({
     front: null,
     back: null,
     left: null,
-    right: null
+    right: null,
+    licenseDisk: null
   });
 
   const [previews, setPreviews] = useState({
     front: null,
     back: null,
     left: null,
-    right: null
+    right: null,
+    licenseDisk: null
   });
 
   const [currentAngle, setCurrentAngle] = useState(null);
@@ -39,7 +42,8 @@ const CaptureVehicle = () => {
     { id: 'front', label: 'Front View', required: true },
     { id: 'back', label: 'Back View (License Plate)', required: true },
     { id: 'left', label: 'Left Side View', required: true },
-    { id: 'right', label: 'Right Side View', required: true }
+    { id: 'right', label: 'Right Side View', required: true },
+    { id: 'licenseDisk', label: 'License Disk', required: true }
   ];
 
   const handleInputChange = (e) => {
@@ -56,7 +60,7 @@ const CaptureVehicle = () => {
   const canProceed = () => {
     const allPhotos = angles.every(angle => photos[angle.id]);
     const allFields = vehicleData.make && vehicleData.model && vehicleData.year && 
-                      vehicleData.color && vehicleData.licensePlate;
+                      vehicleData.color && vehicleData.licensePlate && vehicleData.licenseDiskExpiryDate;
     return allPhotos && allFields;
   };
 
@@ -84,6 +88,7 @@ const CaptureVehicle = () => {
       const backImage = await convertToBase64(photos.back);
       const leftImage = await convertToBase64(photos.left);
       const rightImage = await convertToBase64(photos.right);
+      const licenseDiskImage = await convertToBase64(photos.licenseDisk);
 
       // Update verification with vehicle data
       await kycService.updateVerification(sessionId, {
@@ -92,6 +97,8 @@ const CaptureVehicle = () => {
           backImage,
           leftImage,
           rightImage,
+          licenseDiskImage,
+          licenseDiskExpiryDate: vehicleData.licenseDiskExpiryDate,
           make: vehicleData.make,
           model: vehicleData.model,
           year: parseInt(vehicleData.year),
@@ -217,6 +224,24 @@ const CaptureVehicle = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Must match the license plate visible in your back view photo
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  License Disk Expiry Date *
+                </label>
+                <input
+                  type="date"
+                  name="licenseDiskExpiryDate"
+                  value={vehicleData.licenseDiskExpiryDate}
+                  onChange={handleInputChange}
+                  className="input-field w-full"
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter the expiry date shown on your license disk. Must not be expired.
                 </p>
               </div>
             </div>
