@@ -193,15 +193,34 @@ const AdminKYCReview = () => {
                 <div>
                   <p className="text-sm text-gray-600">ID Number</p>
                   <p className="font-medium">
-            {submission.documents?.idDocument?.documentNumber || 
-             submission.personalInfo?.idNumber || submission.driverProfile?.id_number || 'Not provided'}
+                    {submission.documents?.idDocument?.documentNumber || 
+                     submission.personalInfo?.idNumber || 
+                     submission.driverProfile?.id_number || 
+                     'Not provided'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Licence Number</p>
                   <p className="font-medium">
-            {submission.documents?.driverLicense?.licenseNumber || 
-             submission.personalInfo?.licenseNumber || submission.driverProfile?.driving_license_no || 'Not provided'}
+                    {submission.documents?.driverLicense?.licenseNumber || 
+                     submission.personalInfo?.licenseNumber || 
+                     submission.driverProfile?.driving_license_no || 
+                     'Not provided'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">ID Document Type</p>
+                  <p className="font-medium">
+                    {submission.documents?.idDocument?.type === 'sa_id' ? 'SA ID Book/Card' :
+                     submission.documents?.idDocument?.type === 'passport' ? 'Passport' :
+                     submission.documents?.idDocument?.type === 'drivers_license' ? 'Driver\'s License' :
+                     submission.documents?.idDocument?.type || 'Not specified'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">License Class</p>
+                  <p className="font-medium">
+                    {submission.documents?.driverLicense?.licenseClass || 'Not provided'}
                   </p>
                 </div>
                 <div>
@@ -363,6 +382,14 @@ const AdminKYCReview = () => {
                             <p className="font-medium">{submission.documents.vehicle.licensePlate}</p>
                           </div>
                         )}
+                        {submission.documents.vehicle.licenseDiskExpiryDate && (
+                          <div>
+                            <p className="text-gray-600">License Disk Expiry</p>
+                            <p className="font-medium">
+                              {new Date(submission.documents.vehicle.licenseDiskExpiryDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -371,7 +398,8 @@ const AdminKYCReview = () => {
                   {(submission.documents.vehicle.frontImage || 
                     submission.documents.vehicle.backImage || 
                     submission.documents.vehicle.leftImage || 
-                    submission.documents.vehicle.rightImage) ? (
+                    submission.documents.vehicle.rightImage ||
+                    submission.documents.vehicle.licenseDiskImage) ? (
                     <>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {submission.documents.vehicle.frontImage && (
@@ -431,6 +459,22 @@ const AdminKYCReview = () => {
                               alt="Vehicle Right" 
                               className="w-full h-full object-cover cursor-pointer hover:opacity-90"
                               onClick={() => window.open(submission.documents.vehicle.rightImage, '_blank')}
+                              onError={(e) => {
+                                e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Image Error</text></svg>';
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {submission.documents.vehicle.licenseDiskImage && (
+                        <div>
+                          <p className="text-sm text-gray-600 mb-2">License Disk</p>
+                          <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                            <img 
+                              src={submission.documents.vehicle.licenseDiskImage} 
+                              alt="License Disk" 
+                              className="w-full h-full object-cover cursor-pointer hover:opacity-90"
+                              onClick={() => window.open(submission.documents.vehicle.licenseDiskImage, '_blank')}
                               onError={(e) => {
                                 e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Image Error</text></svg>';
                               }}

@@ -278,6 +278,29 @@ const CaptureDocuments = () => {
     if (!canProceed() || !sessionId) return;
     
     try {
+      // Update ID document with document number from personal info
+      if (docFrontCompleted && personalInfo.idNumber) {
+        await kycService.updateVerification(sessionId, {
+          documentType: 'id_document',
+          documentData: {
+            type: docType === 'id_card' ? 'sa_id' : docType,
+            documentNumber: personalInfo.idNumber
+          }
+        });
+      }
+      
+      // Update driver license with license number and class
+      if (licenceCompleted && personalInfo.licenseNumber) {
+        await kycService.updateVerification(sessionId, {
+          documentType: 'driver_license',
+          documentData: {
+            licenseNumber: personalInfo.licenseNumber,
+            licenseClass: personalInfo.licenseClass,
+            expiryDate: personalInfo.expiryDate
+          }
+        });
+      }
+      
       // Navigate to vehicle capture page
       navigate(`/verify/vehicle?sessionId=${sessionId}`);
     } catch (error) {
