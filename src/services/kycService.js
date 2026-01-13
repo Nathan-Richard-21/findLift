@@ -297,6 +297,22 @@ export const kycService = {
     }
   },
 
+  // Admin: Update verification details (ID number, license number, etc.)
+  adminUpdate: async (sessionId, updateData) => {
+    try {
+      const response = await api.put(`/verification/admin/${sessionId}/update`, updateData);
+      
+      if (response.data.success) {
+        return response.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to update verification');
+      }
+    } catch (error) {
+      console.error('Failed to update verification:', error);
+      throw new Error(error.response?.data?.message || 'Failed to update verification details');
+    }
+  },
+
   // Admin: Get verification statistics
   getStats: async () => {
     try {

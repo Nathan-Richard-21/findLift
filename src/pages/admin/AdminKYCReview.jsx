@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaUser, FaIdCard, FaCheck, FaTimes, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaIdCard, FaCheck, FaTimes, FaExclamationTriangle, FaSpinner, FaEdit, FaSave } from 'react-icons/fa';
 import { kycService } from '../../services/kycService';
 
 const AdminKYCReview = () => {
@@ -15,6 +15,15 @@ const AdminKYCReview = () => {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
+  
+  // Edit mode for document details
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    idNumber: '',
+    licenseNumber: '',
+    licenseClass: ''
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadSubmission();
@@ -43,6 +52,16 @@ const AdminKYCReview = () => {
       // Attach driverProfile as a fallback source for ID/license display
       const merged = { ...verification, driverProfile };
       setSubmission(merged);
+      
+      // Initialize edit data with current values
+      setEditData({
+        idNumber: verification.documents?.idDocument?.documentNumber || 
+                  verification.personalInfo?.idNumber || 
+                  driverProfile?.id_number || '',
+        licenseNumber: verification.documents?.driverLicense?.licenseNumber || 
+                       driverProfile?.driving_license_no || '',
+        licenseClass: verification.documents?.driverLicense?.licenseClass || ''
+      });
     } catch (error) {
       console.error('Failed to load submission:', error);
       
@@ -94,6 +113,42 @@ const AdminKYCReview = () => {
       alert('Failed to process decision: ' + error.message);
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleSaveDetails = async () => {
+    setSaving(true);
+    try {
+      // Filter out empty values and "TBD"
+      const updateData = {};
+      if (editData.idNumber && editData.idNumber !== 'TBD') {
+        updateData.idNumber = editData.idNumber;
+      }
+      if (editData.licenseNumber) {
+        updateData.licenseNumber = editData.licenseNumber;
+      }
+      if (editData.licenseClass) {
+        updateData.licenseClass = editData.licenseClass;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        alert('No changes to save');
+        setIsEditing(false);
+        return;
+      }
+
+      await kycService.adminUpdate(sessionId, updateData);
+      
+      // Reload the submission to get updated data
+      await loadSubmission();
+      
+      setIsEditing(false);
+      alert('Details updated successfully');
+    } catch (error) {
+      console.error('Failed to save details:', error);
+      alert('Failed to save details: ' + error.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -172,7 +227,34 @@ const AdminKYCReview = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* User Info */}
             <div className="bg-white rounded-2xl shadow p-6">
-              <h2 className="text-xl font-bold mb-4">User Information</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">User Information</h2>
+                {!isEditing ? (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <FaEdit className="mr-1" /> Edit Details
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveDetails}
+                      disabled={saving}
+                      className="flex items-center bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {saving ? <FaSpinner className="animate-spin mr-1" /> : <FaSave className="mr-1" />}
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="flex items-center bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Name</p>
@@ -192,21 +274,41 @@ const AdminKYCReview = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">ID Number</p>
-                  <p className="font-medium">
-                    {submission.documents?.idDocument?.documentNumber || 
-                     submission.personalInfo?.idNumber || 
-                     submission.driverProfile?.id_number || 
-                     'Not provided'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.idNumber}
+                      onChange={(e) => setEditData(prev => ({ ...prev, idNumber: e.target.value }))}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      placeholder="Enter ID number"
+                    />
+                  ) : (
+                    <p className="font-medium">
+                      {submission.documents?.idDocument?.documentNumber || 
+                       submission.personalInfo?.idNumber || 
+                       submission.driverProfile?.id_number || 
+                       'Not provided'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Licence Number</p>
-                  <p className="font-medium">
-                    {submission.documents?.driverLicense?.licenseNumber || 
-                     submission.personalInfo?.licenseNumber || 
-                     submission.driverProfile?.driving_license_no || 
-                     'Not provided'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.licenseNumber}
+                      onChange={(e) => setEditData(prev => ({ ...prev, licenseNumber: e.target.value }))}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      placeholder="Enter licence number"
+                    />
+                  ) : (
+                    <p className="font-medium">
+                      {submission.documents?.driverLicense?.licenseNumber || 
+                       submission.personalInfo?.licenseNumber || 
+                       submission.driverProfile?.driving_license_no || 
+                       'Not provided'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">ID Document Type</p>
@@ -219,9 +321,19 @@ const AdminKYCReview = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">License Class</p>
-                  <p className="font-medium">
-                    {submission.documents?.driverLicense?.licenseClass || 'Not provided'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editData.licenseClass}
+                      onChange={(e) => setEditData(prev => ({ ...prev, licenseClass: e.target.value }))}
+                      className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                      placeholder="Enter license class (e.g., B, C1, EC)"
+                    />
+                  ) : (
+                    <p className="font-medium">
+                      {submission.documents?.driverLicense?.licenseClass || 'Not provided'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Email</p>
