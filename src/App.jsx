@@ -40,10 +40,17 @@ import PaymentCancel from './pages/PaymentCancel'
 import MockPayment from './pages/MockPayment'
 // Email verification
 import VerifyEmail from './pages/VerifyEmail'
-import { createContext, useContext, useState } from 'react'
+// Inactivity warning and session management
+import InactivityWarning from './components/InactivityWarning'
+import SessionExpiredToast from './components/SessionExpiredToast'
+import useInactivityTimeout from './hooks/useInactivityTimeout'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 
 // Auth Context
 const AuthContext = createContext()
+
+// Inactivity timeout in minutes
+const INACTIVITY_TIMEOUT_MINUTES = 15
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -56,15 +63,38 @@ export const useAuth = () => {
 // Auth Provider Component
 function AuthProvider({ children }) {
   const [hasTriedAuth, setHasTriedAuth] = useState(false);
+  const [showInactivityWarning, setShowInactivityWarning] = useState(false);
+  const [logoutReason, setLogoutReason] = useState(null);
+  const isLoggingOut = useRef(false);
   
   const { data: user, isLoading, error, refetch } = useQuery({
     queryKey: ['user'],
     queryFn: async () => {
       console.log('Fetching user...');
       try {
+        // Check if session expired due to inactivity before fetching
+        const lastActivity = localStorage.getItem('lastActivity');
+        const timeoutMs = INACTIVITY_TIMEOUT_MINUTES * 60 * 1000;
+        
+        if (lastActivity) {
+          const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+          if (timeSinceLastActivity > timeoutMs) {
+            console.log('⏰ Session expired during browser close');
+            // Clear auth data
+            localStorage.removeItem('token');
+            localStorage.removeItem('lastActivity');
+            document.cookie = 'token=; path=/; max-age=0';
+            setLogoutReason('session_expired');
+            setHasTriedAuth(true);
+            return null;
+          }
+        }
+        
         const res = await authService.getMe();
         console.log('User fetched successfully');
         setHasTriedAuth(true);
+        // Initialize activity tracking
+        localStorage.setItem('lastActivity', Date.now().toString());
         return res.data.user;
       } catch (error) {
         console.log('User fetch failed:', error.response?.status);
@@ -84,10 +114,95 @@ function AuthProvider({ children }) {
     enabled: !hasTriedAuth, // Only fetch once, then disable
   })
 
-  const logout = async () => {
+  // Handle inactivity logout
+  const handleInactivityLogout = useCallback(async () => {
+    if (isLoggingOut.current) return;
+    isLoggingOut.current = true;
+    
+    console.log('🔐 Auto-logout due to inactivity');
+    setLogoutReason('inactivity');
+    setShowInactivityWarning(false);
+    
     try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout API error:', error);
+    }
+    
+    // Clear all local state
+    localStorage.removeItem('token');
+    localStorage.removeItem('lastActivity');
+    document.cookie = 'token=; path=/; max-age=0';
+    
+    // Notify other tabs about logout
+    localStorage.setItem('logout-event', Date.now().toString());
+    
+    setHasTriedAuth(false);
+    await refetch();
+    
+    // Reset flag after delay
+    setTimeout(() => {
+      isLoggingOut.current = false;
+    }, 100);
+  }, [refetch]);
+
+  // Initialize inactivity timeout
+  const { resetTimer } = useInactivityTimeout(
+    handleInactivityLogout,
+    INACTIVITY_TIMEOUT_MINUTES,
+    !!user
+  );
+
+  // Listen for inactivity warning
+  useEffect(() => {
+    const handleWarning = (event) => {
+      if (user) {
+        setShowInactivityWarning(true);
+        console.log(`⚠️ Inactivity warning: ${event.detail.minutesRemaining} minutes until logout`);
+      }
+    };
+
+    window.addEventListener('inactivity-warning', handleWarning);
+    return () => window.removeEventListener('inactivity-warning', handleWarning);
+  }, [user]);
+
+  // Listen for logout from other tabs
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === 'logout-event' && user) {
+        console.log('🔐 Logout detected from another tab');
+        setHasTriedAuth(false);
+        refetch();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user, refetch]);
+
+  // Dismiss warning and reset timer
+  const dismissInactivityWarning = useCallback(() => {
+    setShowInactivityWarning(false);
+    resetTimer();
+  }, [resetTimer]);
+
+  // Clear logout reason
+  const clearLogoutReason = useCallback(() => {
+    setLogoutReason(null);
+  }, []);
+
+  const logout = async (reason = 'manual') => {
+    try {
+      console.log(`🔐 Logging out user. Reason: ${reason}`);
       await authService.logout()
       // Clear all local state immediately
+      localStorage.removeItem('token');
+      localStorage.removeItem('lastActivity');
+      document.cookie = 'token=; path=/; max-age=0';
+      
+      // Notify other tabs
+      localStorage.setItem('logout-event', Date.now().toString());
+      
       setHasTriedAuth(false)
       // Force refetch to clear user state
       await refetch()
@@ -96,6 +211,9 @@ function AuthProvider({ children }) {
     } catch (error) {
       console.error('Logout error:', error)
       // Force logout even if API call fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('lastActivity');
+      document.cookie = 'token=; path=/; max-age=0';
       setHasTriedAuth(false)
       await refetch()
       window.location.href = '/'
@@ -104,6 +222,8 @@ function AuthProvider({ children }) {
 
   const customRefetch = () => {
     setHasTriedAuth(false) // Reset flag to allow refetch
+    // Reset activity tracking on successful refetch (login)
+    localStorage.setItem('lastActivity', Date.now().toString());
     return refetch()
   }
 
@@ -112,12 +232,21 @@ function AuthProvider({ children }) {
     isLoading: isLoading && !hasTriedAuth, // Don't show loading after first attempt
     isAuthenticated: !!user,
     logout,
-    refetch: customRefetch
+    refetch: customRefetch,
+    // Inactivity related values
+    showInactivityWarning,
+    dismissInactivityWarning,
+    logoutReason,
+    clearLogoutReason,
+    resetActivityTimer: resetTimer,
+    inactivityTimeoutMinutes: INACTIVITY_TIMEOUT_MINUTES
   }
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+      <InactivityWarning />
+      <SessionExpiredToast />
     </AuthContext.Provider>
   )
 }

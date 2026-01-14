@@ -58,6 +58,11 @@ api.interceptors.request.use(
 // Response interceptor for global error handling
 api.interceptors.response.use(
   (response) => {
+    // Reset activity timer on successful authenticated API calls
+    const token = getTokenFromCookie();
+    if (token) {
+      localStorage.setItem('lastActivity', Date.now().toString());
+    }
     return response;
   },
   (error) => {
