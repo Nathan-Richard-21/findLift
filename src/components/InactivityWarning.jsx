@@ -35,8 +35,18 @@ const InactivityWarning = () => {
   const seconds = countdown % 60;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4 animate-fade-in">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4 animate-fade-in relative">
+        {/* Close Button */}
+        <button
+          onClick={dismissInactivityWarning}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+          aria-label="Close"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
         {/* Warning Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">

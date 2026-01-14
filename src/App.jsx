@@ -50,7 +50,7 @@ import { createContext, useContext, useState, useCallback, useEffect, useRef } f
 const AuthContext = createContext()
 
 // Inactivity timeout in minutes
-const INACTIVITY_TIMEOUT_MINUTES = 15
+const INACTIVITY_TIMEOUT_MINUTES = 10
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
