@@ -101,6 +101,9 @@ export const authService = {
     // Store token in localStorage for mobile Safari compatibility
     if (response.data?.data?.token) {
       localStorage.setItem('token', response.data.data.token);
+      // Clear logout flag on successful registration
+      localStorage.removeItem('wasLoggedOut');
+      localStorage.setItem('lastActivity', Date.now().toString());
       console.log('✅ Token stored in localStorage for mobile compatibility');
     }
     return response.data;
@@ -110,6 +113,9 @@ export const authService = {
     // Store token in localStorage for mobile Safari compatibility
     if (response.data?.data?.token) {
       localStorage.setItem('token', response.data.data.token);
+      // Clear logout flag on successful login
+      localStorage.removeItem('wasLoggedOut');
+      localStorage.setItem('lastActivity', Date.now().toString());
       console.log('✅ Token stored in localStorage for mobile compatibility');
     }
     return response.data;
@@ -118,7 +124,10 @@ export const authService = {
     const response = await api.post('/auth/logout');
     // Clear token from both cookie and localStorage
     document.cookie = 'token=; path=/; max-age=0';
+    document.cookie = 'token=; path=/; max-age=0; domain=' + window.location.hostname;
     localStorage.removeItem('token');
+    localStorage.removeItem('lastActivity');
+    localStorage.setItem('wasLoggedOut', 'true');
     console.log('✅ Logged out - token cleared from cookie and localStorage');
     return response.data;
   },

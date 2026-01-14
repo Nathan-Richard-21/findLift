@@ -72,6 +72,14 @@ function AuthProvider({ children }) {
     queryFn: async () => {
       console.log('Fetching user...');
       try {
+        // Check if user was logged out due to inactivity - don't auto-login
+        const wasLoggedOut = localStorage.getItem('wasLoggedOut');
+        if (wasLoggedOut === 'true') {
+          console.log('🔐 User was logged out - not auto-logging in');
+          setHasTriedAuth(true);
+          return null;
+        }
+        
         // Check if session expired due to inactivity before fetching
         const lastActivity = localStorage.getItem('lastActivity');
         const timeoutMs = INACTIVITY_TIMEOUT_MINUTES * 60 * 1000;
@@ -84,10 +92,19 @@ function AuthProvider({ children }) {
             localStorage.removeItem('token');
             localStorage.removeItem('lastActivity');
             document.cookie = 'token=; path=/; max-age=0';
+            localStorage.setItem('wasLoggedOut', 'true');
             setLogoutReason('session_expired');
             setHasTriedAuth(true);
             return null;
           }
+        }
+        
+        // Check if there's a token before trying to fetch
+        const token = localStorage.getItem('token') || document.cookie.includes('token=');
+        if (!token) {
+          console.log('No token found - not logged in');
+          setHasTriedAuth(true);
+          return null;
         }
         
         const res = await authService.getMe();
@@ -129,22 +146,24 @@ function AuthProvider({ children }) {
       console.error('Logout API error:', error);
     }
     
-    // Clear all local state
+    // Clear all local state and set logout flag to prevent auto-login
     localStorage.removeItem('token');
     localStorage.removeItem('lastActivity');
+    localStorage.setItem('wasLoggedOut', 'true');
     document.cookie = 'token=; path=/; max-age=0';
+    // Also clear with domain variations
+    document.cookie = 'token=; path=/; max-age=0; domain=' + window.location.hostname;
     
     // Notify other tabs about logout
     localStorage.setItem('logout-event', Date.now().toString());
     
-    setHasTriedAuth(false);
-    await refetch();
+    setHasTriedAuth(true); // Don't refetch, we're logged out
     
     // Reset flag after delay
     setTimeout(() => {
       isLoggingOut.current = false;
     }, 100);
-  }, [refetch]);
+  }, []);
 
   // Initialize inactivity timeout
   const { resetTimer } = useInactivityTimeout(
@@ -195,17 +214,16 @@ function AuthProvider({ children }) {
     try {
       console.log(`🔐 Logging out user. Reason: ${reason}`);
       await authService.logout()
-      // Clear all local state immediately
+      // Clear all local state immediately and set logout flag
       localStorage.removeItem('token');
       localStorage.removeItem('lastActivity');
+      localStorage.setItem('wasLoggedOut', 'true');
       document.cookie = 'token=; path=/; max-age=0';
+      document.cookie = 'token=; path=/; max-age=0; domain=' + window.location.hostname;
       
       // Notify other tabs
       localStorage.setItem('logout-event', Date.now().toString());
       
-      setHasTriedAuth(false)
-      // Force refetch to clear user state
-      await refetch()
       // Redirect to home page
       window.location.href = '/'
     } catch (error) {
@@ -213,14 +231,16 @@ function AuthProvider({ children }) {
       // Force logout even if API call fails
       localStorage.removeItem('token');
       localStorage.removeItem('lastActivity');
+      localStorage.setItem('wasLoggedOut', 'true');
       document.cookie = 'token=; path=/; max-age=0';
-      setHasTriedAuth(false)
-      await refetch()
+      document.cookie = 'token=; path=/; max-age=0; domain=' + window.location.hostname;
       window.location.href = '/'
     }
   }
 
   const customRefetch = () => {
+    // Clear the logout flag when user explicitly logs in
+    localStorage.removeItem('wasLoggedOut');
     setHasTriedAuth(false) // Reset flag to allow refetch
     // Reset activity tracking on successful refetch (login)
     localStorage.setItem('lastActivity', Date.now().toString());
